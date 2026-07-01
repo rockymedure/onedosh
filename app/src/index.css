@@ -1,0 +1,89 @@
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: radial-gradient(1200px 800px at 20% -10%, #e9e6dc 0%, #dedbd1 60%, #d6d3c9 100%);
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #12141c;
+  letter-spacing: -0.01em;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+input {
+  font-family: inherit;
+}
+@keyframes pulse {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0.6; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.dosh-enter {
+  animation: rise 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.pop {
+  animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+/* Social feed: a freshly-arrived event slides + glows in */
+@keyframes freshin {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.feed-fresh {
+  animation: freshin 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Reaction emoji bursts up and fades */
+@keyframes burst {
+  0% { opacity: 0; transform: translateY(0) scale(0.4); }
+  25% { opacity: 1; transform: translateY(-10px) scale(1.25); }
+  100% { opacity: 0; transform: translateY(-42px) scale(0.9); }
+}
+.burst {
+  animation: burst 0.85s ease-out forwards;
+}
+
+/* Moving sheen across progress bars / live pills */
+@keyframes shimmer {
+  0% { background-position: -160% 0; }
+  100% { background-position: 260% 0; }
+}
+.shimmer {
+  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%);
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+/* Gentle bob for presence / live chips */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+.bob { animation: bob 2.6s ease-in-out infinite; }
+
+/* Confetti fl: little squares fall */
+@keyframes fall {
+  0% { opacity: 0; transform: translateY(-8px) rotate(0deg); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(60px) rotate(220deg); }
+}
+
+::-webkit-scrollbar { width: 0; height: 0; }
