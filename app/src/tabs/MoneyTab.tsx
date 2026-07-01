@@ -56,64 +56,7 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
 
   return (
     <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
-      <div
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background: t.navy,
-          borderRadius: t.radiusCard,
-          padding: 20,
-          color: "#fff",
-        }}
-      >
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: -60,
-            right: -40,
-            width: 160,
-            height: 160,
-            borderRadius: "50%",
-            background: t.lime,
-            opacity: 0.14,
-            filter: "blur(12px)",
-          }}
-        />
-        <div style={{ position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span
-              style={{ width: 7, height: 7, borderRadius: 4, background: t.lime, boxShadow: `0 0 8px ${t.lime}` }}
-            />
-            <span style={{ fontSize: 13, color: "#AEB8CC" }}>Your balances</span>
-          </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-            <BalanceCell
-              label="Dollars"
-              symbol="$"
-              amount={context.usdBalance.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            />
-            <BalanceCell
-              label="Naira"
-              symbol="₦"
-              amount={context.ngnBalance.toLocaleString()}
-            />
-          </div>
-          <div style={{ fontSize: 12, color: "#AEB8CC", marginTop: 10 }}>
-            Rate{" "}
-            <span style={{ color: t.lime, fontWeight: 700 }}>
-              ₦{context.nairaPerUsd.toLocaleString()}/$
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <WalletBtn primary label="Add money" onClick={() => onOpenDosh("I want to add money")} />
-            <WalletBtn label="Convert" onClick={() => onOpenDosh("Convert some dollars to naira")} />
-          </div>
-        </div>
-      </div>
+      <BalanceStack onOpenDosh={onOpenDosh} />
 
       <div
         style={{
@@ -182,29 +125,148 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
   );
 }
 
-function BalanceCell({
+const CARD_H = 186;
+const PEEK = 30;
+
+function BalanceStack({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
+  const [front, setFront] = useState<0 | 1>(0);
+
+  const cards = [
+    {
+      key: "usd" as const,
+      label: "Dollar balance",
+      symbol: "$",
+      amount: context.usdBalance.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      sub: `≈ ₦${(context.usdBalance * context.nairaPerUsd).toLocaleString()} at today's rate`,
+      background: t.navy,
+      accent: t.lime,
+      blob: t.lime,
+      addPrompt: "I want to add dollars",
+      convertPrompt: "Convert some dollars to naira",
+    },
+    {
+      key: "ngn" as const,
+      label: "Naira balance",
+      symbol: "₦",
+      amount: context.ngnBalance.toLocaleString(),
+      sub: `Rate ₦${context.nairaPerUsd.toLocaleString()}/$`,
+      background: "linear-gradient(135deg, #0B6B4F 0%, #10B981 100%)",
+      accent: "#EFFCF6",
+      blob: "#5EEAD4",
+      addPrompt: "I want to add naira",
+      convertPrompt: "Convert some naira to dollars",
+    },
+  ];
+
+  return (
+    <div style={{ position: "relative", height: CARD_H + PEEK }}>
+      {cards.map((c, i) => {
+        const isFront = i === front;
+        return (
+          <BalanceCard
+            key={c.key}
+            {...c}
+            isFront={isFront}
+            peekOffset={PEEK}
+            onBringForward={() => setFront(i as 0 | 1)}
+            onOpenDosh={onOpenDosh}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function BalanceCard({
   label,
   symbol,
   amount,
+  sub,
+  background,
+  accent,
+  blob,
+  addPrompt,
+  convertPrompt,
+  isFront,
+  peekOffset,
+  onBringForward,
+  onOpenDosh,
 }: {
   label: string;
   symbol: string;
   amount: string;
+  sub: string;
+  background: string;
+  accent: string;
+  blob: string;
+  addPrompt: string;
+  convertPrompt: string;
+  isFront: boolean;
+  peekOffset: number;
+  onBringForward: () => void;
+  onOpenDosh: (prompt: string) => void;
 }) {
   return (
     <div
+      onClick={isFront ? undefined : onBringForward}
       style={{
-        flex: 1,
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.10)",
-        borderRadius: 14,
-        padding: "12px 14px",
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: isFront ? 0 : peekOffset,
+        height: CARD_H,
+        overflow: "hidden",
+        background,
+        borderRadius: t.radiusCard,
+        padding: 20,
+        color: "#fff",
+        zIndex: isFront ? 2 : 1,
+        transform: isFront ? "scale(1)" : "scale(0.955)",
+        transformOrigin: "top center",
+        opacity: isFront ? 1 : 0.96,
+        boxShadow: isFront
+          ? "0 14px 34px rgba(20,28,51,0.30)"
+          : "0 6px 16px rgba(20,28,51,0.18)",
+        cursor: isFront ? "default" : "pointer",
+        transition: "top 0.28s ease, transform 0.28s ease, opacity 0.28s ease",
       }}
     >
-      <div style={{ fontSize: 12, color: "#AEB8CC" }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 800, marginTop: 2, whiteSpace: "nowrap" }}>
-        <span style={{ color: t.lime }}>{symbol}</span>
-        {amount}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -60,
+          right: -40,
+          width: 160,
+          height: 160,
+          borderRadius: "50%",
+          background: blob,
+          opacity: 0.16,
+          filter: "blur(12px)",
+        }}
+      />
+      <div style={{ position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{ width: 7, height: 7, borderRadius: 4, background: accent, boxShadow: `0 0 8px ${accent}` }}
+          />
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.72)" }}>{label}</span>
+        </div>
+        <div style={{ fontSize: 34, fontWeight: 800, marginTop: 4 }}>
+          <span style={{ color: accent }}>{symbol}</span>
+          {amount}
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 2 }}>{sub}</div>
+
+        {isFront && (
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <WalletBtn primary label="Add money" onClick={() => onOpenDosh(addPrompt)} />
+            <WalletBtn label="Convert" onClick={() => onOpenDosh(convertPrompt)} />
+          </div>
+        )}
       </div>
     </div>
   );
