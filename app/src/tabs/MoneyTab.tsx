@@ -1,10 +1,61 @@
+import { useEffect, useState } from "react";
 import { t, glass, glassBorder, limeGlow } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
+import { health } from "../dosh/api";
+import { CardStack } from "../money/CardStack";
+import { CardStudio } from "../money/CardStudio";
+import { templateById, last4For, type CardDesign, type OwnedCard } from "../money/cards";
+
+const SEED_CARDS: OwnedCard[] = [
+  {
+    uid: "founding",
+    design: templateById("lime-static")!,
+    last4: "4921",
+    minted: "Founding drop",
+    edition: "Founding drop · 1 of 1",
+  },
+  {
+    uid: "chrome",
+    design: templateById("liquid-chrome")!,
+    last4: last4For("chrome"),
+    minted: "Jun 2026",
+  },
+  {
+    uid: "naija",
+    design: templateById("naija-heat")!,
+    last4: last4For("naija"),
+    minted: "Jun 2026",
+    edition: "Limited · #0142",
+  },
+];
 
 export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
+  const [owned, setOwned] = useState<OwnedCard[]>(SEED_CARDS);
+  const [studioOpen, setStudioOpen] = useState(false);
+  const [canGenerate, setCanGenerate] = useState(false);
+
+  useEffect(() => {
+    health().then((h) => setCanGenerate(Boolean(h.cardStudio)));
+  }, []);
+
+  function mint(design: CardDesign) {
+    const uid = `${design.id}-${Date.now()}`;
+    setOwned((prev) => [
+      ...prev,
+      {
+        uid,
+        design,
+        last4: last4For(uid),
+        minted: "Just now",
+        edition: design.rarity === "1 of 1" ? "1 of 1 · minted for you" : undefined,
+      },
+    ]);
+    setStudioOpen(false);
+  }
+
   return (
-    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 8 }}>
+    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
       <div
         style={{
           position: "relative",
@@ -53,56 +104,31 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
         </div>
       </div>
 
-      <SectionLabel>Card</SectionLabel>
       <div
         style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "linear-gradient(135deg,#1E2E52,#15223D)",
-          borderRadius: t.radiusCard,
-          padding: 18,
-          color: "#fff",
-          height: 150,
           display: "flex",
-          flexDirection: "column",
+          alignItems: "center",
           justifyContent: "space-between",
+          margin: "6px 2px",
         }}
       >
-        <span
-          aria-hidden
+        <SectionLabel>Your cards · {owned.length}</SectionLabel>
+        <button
+          onClick={() => setStudioOpen(true)}
           style={{
-            position: "absolute",
-            bottom: -50,
-            left: -30,
-            width: 160,
-            height: 160,
-            borderRadius: 80,
-            background: t.lime,
-            opacity: 0.18,
-            filter: "blur(30px)",
+            border: "none",
+            background: t.navy,
+            color: "#fff",
+            borderRadius: 999,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontWeight: 700,
           }}
-        />
-        <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontFamily: "inherit", fontWeight: 800, fontSize: 18, color: t.lime }}>Dosh</span>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: t.limeInk,
-              background: t.lime,
-              borderRadius: 999,
-              padding: "3px 9px",
-            }}
-          >
-            Virtual · USD
-          </span>
-        </div>
-        <div style={{ position: "relative", fontSize: 17, letterSpacing: 2 }}>••••  ••••  ••••  4921</div>
-        <div style={{ position: "relative", display: "flex", justifyContent: "space-between", fontSize: 12, color: "#AEB8CC" }}>
-          <span>{context.name}</span>
-          <span style={{ color: t.lime, fontWeight: 700 }}>VISA</span>
-        </div>
+        >
+          ✨ New drop
+        </button>
       </div>
+      <CardStack name={context.name} cards={owned} onOpenStudio={() => setStudioOpen(true)} />
 
       <SectionLabel>Discover</SectionLabel>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -130,6 +156,17 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
       <div style={{ textAlign: "center", color: t.faint, fontSize: 12, marginTop: 16 }}>
         Account & settings live in your profile (top right).
       </div>
+
+      {studioOpen && (
+        <CardStudio
+          name={context.name}
+          last4={last4For("preview")}
+          initial={owned[0]?.design ?? SEED_CARDS[0].design}
+          canGenerate={canGenerate}
+          onClose={() => setStudioOpen(false)}
+          onMint={mint}
+        />
+      )}
     </div>
   );
 }

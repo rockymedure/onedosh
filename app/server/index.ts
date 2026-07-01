@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { runDosh, hasKey, type ChatMessage, type DoshContext } from "./dosh.ts";
+import { generateCardArt, hasFalKey } from "./cards.ts";
 
 const app = express();
 app.use(cors());
@@ -10,7 +11,31 @@ app.use(express.json({ limit: "1mb" }));
 const PORT = Number(process.env.PORT || 8787);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, key: hasKey(), model: process.env.DOSH_MODEL || "claude-opus-4-6" });
+  res.json({
+    ok: true,
+    key: hasKey(),
+    model: process.env.DOSH_MODEL || "claude-opus-4-6",
+    cardStudio: hasFalKey(),
+  });
+});
+
+app.post("/api/card", async (req, res) => {
+  const { prompt } = req.body as { prompt?: string };
+  if (!hasFalKey()) {
+    res.status(200).json({ error: "no_key", message: "Add FAL_KEY to app/.env to mint AI cards." });
+    return;
+  }
+  if (!prompt || !prompt.trim()) {
+    res.status(400).json({ error: "empty", message: "Tell me the vibe first." });
+    return;
+  }
+  try {
+    const { dataUrl } = await generateCardArt(prompt);
+    res.json({ dataUrl });
+  } catch (err: any) {
+    console.error("Card gen error:", err?.message || err);
+    res.status(500).json({ error: "gen_failed", message: err?.message || "Generation failed" });
+  }
 });
 
 app.post("/api/dosh", async (req, res) => {

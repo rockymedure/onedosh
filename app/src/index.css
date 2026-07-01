@@ -79,11 +79,56 @@ input {
 }
 .bob { animation: bob 2.6s ease-in-out infinite; }
 
+/* Clean "online" presence dot with a soft radar ping (no distortion) */
+@keyframes ping {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+}
+.presence {
+  animation: ping 2s ease-out infinite;
+}
+
+/* Tab icon accent: a soft lime heartbeat on the active tab (no layout shift) */
+@keyframes coinglow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.coin-alive { animation: coinglow 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+
 /* Confetti fl: little squares fall */
 @keyframes fall {
   0% { opacity: 0; transform: translateY(-8px) rotate(0deg); }
   15% { opacity: 1; }
   100% { opacity: 0; transform: translateY(60px) rotate(220deg); }
 }
+
+/* Card Studio: sheet slides up over the app */
+@keyframes sheetup {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.sheet-up { animation: sheetup 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Card mint / select: a quick lift */
+@keyframes cardpop {
+  0% { transform: scale(0.96); opacity: 0.4; }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.card-pop { animation: cardpop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Generating: a scan line sweeps the preview */
+@keyframes scan {
+  0% { transform: translateY(-120%); }
+  100% { transform: translateY(120%); }
+}
+.scan-line { animation: scan 1.5s ease-in-out infinite; }
+
+/* Slow float for the hero card */
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50% { transform: translateY(-5px) rotate(0.4deg); }
+}
+.floaty { animation: floaty 5s ease-in-out infinite; }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
