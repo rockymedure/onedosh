@@ -11,13 +11,14 @@ export type DoshCard =
     }
   | {
       type: "confirm";
-      action?: "send" | "convert" | "hold";
+      action?: "send" | "convert" | "hold" | "stake" | "chip" | "join";
       title?: string;
       fromLabel?: string;
       toLabel?: string;
       rateLabel?: string;
       feeLabel?: string;
       recipient?: string;
+      note?: string;
     }
   | {
       type: "scam_warning";

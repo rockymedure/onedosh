@@ -112,7 +112,28 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
   }
 
   if (card.type === "confirm") {
-    const isSend = card.action === "send";
+    const action = card.action || "send";
+    const cta: Record<string, string> = {
+      send: "Confirm & send",
+      convert: "Confirm",
+      hold: "Confirm",
+      stake: "Place bet",
+      chip: "Chip in",
+      join: "Join",
+    };
+    const doneTitle: Record<string, string> = {
+      send: "Sent ✓",
+      convert: "Converted ✓",
+      hold: "Done ✓",
+      stake: "Bet placed 🎯",
+      chip: "Chipped in ✓",
+      join: "You're in ✓",
+    };
+    const doneSub: Record<string, string> = {
+      stake: "Good luck — I'll watch the result.",
+      chip: "Nice one. Pot's climbing.",
+      join: "You're on the board.",
+    };
     if (done) {
       return (
         <Shell accent={t.green}>
@@ -120,10 +141,10 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
             {card.recipient && <Avatar label={card.recipient} src={photoFor(card.recipient)} size={36} />}
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 14, color: t.ink }}>
-                {isSend ? "Sent ✓" : "Done ✓"}
+                {doneTitle[action] || "Done ✓"}
               </div>
               <div style={{ color: t.sub, fontSize: 13 }}>
-                {card.recipient ? `${card.recipient} will be notified.` : "All set."}
+                {doneSub[action] || (card.recipient ? `${card.recipient} will be notified.` : "All set.")}
               </div>
             </div>
           </div>
@@ -133,14 +154,14 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
     return (
       <Shell accent={t.navy}>
         <div style={{ fontWeight: 800, fontSize: 14, marginBottom: card.recipient ? 10 : 8 }}>
-          {card.title || (isSend ? "Confirm send" : "Confirm")}
+          {card.title || (action === "send" ? "Confirm send" : "Confirm")}
         </div>
         {card.recipient && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <Avatar label={card.recipient} src={photoFor(card.recipient)} size={36} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: t.ink }}>{card.recipient}</div>
-              <div style={{ fontSize: 12, color: t.sub }}>{isSend ? "Recipient" : "Contact"}</div>
+              <div style={{ fontSize: 12, color: t.sub }}>{action === "send" ? "Recipient" : "Contact"}</div>
             </div>
           </div>
         )}
@@ -148,12 +169,17 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
         {card.toLabel && <Row k="To" v={card.toLabel} />}
         {card.rateLabel && <Row k="Rate" v={card.rateLabel} />}
         {card.feeLabel && <Row k="Fee" v={card.feeLabel} />}
+        {card.note && (
+          <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: t.limeInk, background: "rgba(207,242,63,0.4)", borderRadius: 10, padding: "8px 10px" }}>
+            {card.note}
+          </div>
+        )}
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
           <Primary
-            label={isSend ? "Confirm & send" : "Confirm"}
+            label={cta[action] || "Confirm"}
             onClick={() => {
               setDone("ok");
-              onAction(`Confirmed: ${card.title || card.action}`);
+              onAction(`Confirmed: ${card.title || action}`);
             }}
           />
           <Ghost label="Not now" onClick={() => onAction("Not now")} />
