@@ -72,13 +72,12 @@ export async function health(): Promise<{
   ok: boolean;
   key: boolean;
   model: string;
-  cardStudio?: boolean;
   db?: boolean;
 }> {
   try {
     const res = await fetch("/api/health");
     return await res.json();
   } catch {
-    return { ok: false, key: false, model: "", cardStudio: false, db: false };
+    return { ok: false, key: false, model: "", db: false };
   }
 }

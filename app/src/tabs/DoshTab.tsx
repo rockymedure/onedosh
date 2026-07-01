@@ -79,7 +79,6 @@ export function DoshTab({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 84 }}>
-      {state && <LedgerStrip state={state} />}
       <div ref={scroller} style={{ flex: 1, overflowY: "auto", padding: "4px 2px 8px" }}>
         {feed.map((item, i) => (
           <div key={i} className="dosh-enter" style={{ marginBottom: 16 }}>
@@ -181,49 +180,6 @@ export function DoshTab({
           ↑
         </button>
       </div>
-    </div>
-  );
-}
-
-function LedgerStrip({ state }: { state: AppState }) {
-  const usd = `$${state.usd.toLocaleString()}`;
-  const ngn = state.ngn > 0 ? `₦${state.ngn.toLocaleString()}` : null;
-  const pills: { label: string; value: string; glow?: boolean }[] = [
-    { label: "Balance", value: ngn ? `${usd} · ${ngn}` : usd, glow: state.usd > 0 || state.ngn > 0 },
-    { label: "Account", value: state.accountOpened ? "Open ✓" : "Not open" },
-    { label: "People", value: String(state.contacts.length) },
-  ];
-  if (state.watching) pills.push({ label: "Watching", value: state.watching });
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: 8,
-        overflowX: "auto",
-        padding: "2px 2px 10px",
-      }}
-    >
-      {pills.map((p) => (
-        <div
-          key={p.label}
-          style={{
-            ...glass,
-            border: p.glow ? `1px solid ${t.lime}` : glassBorder,
-            borderRadius: 14,
-            padding: "6px 12px",
-            whiteSpace: "nowrap",
-            boxShadow: p.glow ? limeGlow : glass.boxShadow,
-          }}
-        >
-          <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: t.sub }}>
-            {p.label}
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: t.ink, fontVariantNumeric: "tabular-nums" }}>
-            {p.value}
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
