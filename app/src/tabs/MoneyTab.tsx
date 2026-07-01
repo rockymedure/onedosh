@@ -1,88 +1,17 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { t, glass, glassBorder, limeGlow } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
-import { health } from "../dosh/api";
-import { CardStack } from "../money/CardStack";
-import { CardStudio } from "../money/CardStudio";
-import { templateById, last4For, type CardDesign, type OwnedCard } from "../money/cards";
-
-const SEED_CARDS: OwnedCard[] = [
-  {
-    uid: "founding",
-    design: templateById("lime-static")!,
-    last4: "4921",
-    minted: "Founding drop",
-    edition: "Founding drop · 1 of 1",
-  },
-  {
-    uid: "chrome",
-    design: templateById("liquid-chrome")!,
-    last4: last4For("chrome"),
-    minted: "Jun 2026",
-  },
-  {
-    uid: "naija",
-    design: templateById("naija-heat")!,
-    last4: last4For("naija"),
-    minted: "Jun 2026",
-    edition: "Limited · #0142",
-  },
-];
+import { CardArt } from "../money/CardArt";
+import { CARD } from "../money/cards";
 
 export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
-  const [owned, setOwned] = useState<OwnedCard[]>(SEED_CARDS);
-  const [studioOpen, setStudioOpen] = useState(false);
-  const [canGenerate, setCanGenerate] = useState(false);
-
-  useEffect(() => {
-    health().then((h) => setCanGenerate(Boolean(h.cardStudio)));
-  }, []);
-
-  function mint(design: CardDesign) {
-    const uid = `${design.id}-${Date.now()}`;
-    setOwned((prev) => [
-      ...prev,
-      {
-        uid,
-        design,
-        last4: last4For(uid),
-        minted: "Just now",
-        edition: design.rarity === "1 of 1" ? "1 of 1 · minted for you" : undefined,
-      },
-    ]);
-    setStudioOpen(false);
-  }
-
   return (
     <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
       <BalanceStack onOpenDosh={onOpenDosh} />
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "6px 2px",
-        }}
-      >
-        <SectionLabel>Your cards · {owned.length}</SectionLabel>
-        <button
-          onClick={() => setStudioOpen(true)}
-          style={{
-            border: "none",
-            background: t.navy,
-            color: "#fff",
-            borderRadius: 999,
-            padding: "6px 12px",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          ✨ New drop
-        </button>
-      </div>
-      <CardStack name={context.name} cards={owned} onOpenStudio={() => setStudioOpen(true)} />
+      <SectionLabel>Card</SectionLabel>
+      <CardBlock />
 
       <SectionLabel>Discover</SectionLabel>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -110,23 +39,81 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
       <div style={{ textAlign: "center", color: t.faint, fontSize: 12, marginTop: 16 }}>
         Account & settings live in your profile (top right).
       </div>
-
-      {studioOpen && (
-        <CardStudio
-          name={context.name}
-          last4={last4For("preview")}
-          initial={owned[0]?.design ?? SEED_CARDS[0].design}
-          canGenerate={canGenerate}
-          onClose={() => setStudioOpen(false)}
-          onMint={mint}
-        />
-      )}
     </div>
   );
 }
 
-const CARD_H = 186;
-const PEEK = 30;
+function CardBlock() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(328);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setW(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div>
+      <div ref={ref}>
+        <CardArt art={CARD.art} name={context.name} last4={CARD.last4} width={w} />
+      </div>
+      <ApplePayButton />
+    </div>
+  );
+}
+
+function ApplePayButton() {
+  const [added, setAdded] = useState(false);
+  return (
+    <button
+      onClick={() => setAdded(true)}
+      disabled={added}
+      style={{
+        marginTop: 12,
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        border: "none",
+        borderRadius: 14,
+        padding: "14px",
+        background: "#000",
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: 600,
+        letterSpacing: -0.2,
+        cursor: added ? "default" : "pointer",
+      }}
+    >
+      {added ? (
+        "Added to Apple Wallet ✓"
+      ) : (
+        <>
+          Add to
+          <AppleLogo />
+          Pay
+        </>
+      )}
+    </button>
+  );
+}
+
+function AppleLogo() {
+  return (
+    <svg width={16} height={19} viewBox="0 0 17 21" fill="#fff" aria-hidden style={{ marginLeft: 2 }}>
+      <path d="M14.2 11.1c0-2.2 1.8-3.3 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8-.7 0-1.7-.8-2.9-.8-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1.1 2.6-2.1.8-1.2 1.2-2.4 1.2-2.4-.1 0-2.3-.9-2.3-3.5zM12 4.6c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.6.6-1.1 1.6-.9 2.6 1 .1 1.9-.5 2.5-1.2z" />
+    </svg>
+  );
+}
+
+const CARD_H = 170;
+const PEEK = 76;
 
 function BalanceStack({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
   const [front, setFront] = useState<0 | 1>(0);
@@ -165,10 +152,11 @@ function BalanceStack({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) 
     <div style={{ position: "relative", height: CARD_H + PEEK }}>
       {cards.map((c, i) => {
         const isFront = i === front;
+        const { key, ...rest } = c;
         return (
           <BalanceCard
-            key={c.key}
-            {...c}
+            key={key}
+            {...rest}
             isFront={isFront}
             peekOffset={PEEK}
             onBringForward={() => setFront(i as 0 | 1)}
@@ -214,24 +202,22 @@ function BalanceCard({
       onClick={isFront ? undefined : onBringForward}
       style={{
         position: "absolute",
-        left: 0,
-        right: 0,
-        top: isFront ? 0 : peekOffset,
+        left: isFront ? 0 : 10,
+        right: isFront ? 0 : 10,
+        top: isFront ? peekOffset : 0,
         height: CARD_H,
         overflow: "hidden",
         background,
         borderRadius: t.radiusCard,
-        padding: 20,
+        padding: 18,
         color: "#fff",
         zIndex: isFront ? 2 : 1,
-        transform: isFront ? "scale(1)" : "scale(0.955)",
-        transformOrigin: "top center",
-        opacity: isFront ? 1 : 0.96,
+        opacity: isFront ? 1 : 0.97,
         boxShadow: isFront
           ? "0 14px 34px rgba(20,28,51,0.30)"
-          : "0 6px 16px rgba(20,28,51,0.18)",
+          : "0 6px 16px rgba(20,28,51,0.16)",
         cursor: isFront ? "default" : "pointer",
-        transition: "top 0.28s ease, transform 0.28s ease, opacity 0.28s ease",
+        transition: "top 0.3s ease, left 0.3s ease, right 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease",
       }}
     >
       <div
@@ -255,11 +241,13 @@ function BalanceCard({
           />
           <span style={{ fontSize: 13, color: "rgba(255,255,255,0.72)" }}>{label}</span>
         </div>
-        <div style={{ fontSize: 34, fontWeight: 800, marginTop: 4 }}>
+        <div style={{ fontSize: 32, fontWeight: 800, marginTop: 4 }}>
           <span style={{ color: accent }}>{symbol}</span>
           {amount}
         </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 2 }}>{sub}</div>
+        {isFront && (
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 2 }}>{sub}</div>
+        )}
 
         {isFront && (
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>

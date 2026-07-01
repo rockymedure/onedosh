@@ -6,6 +6,16 @@ import express from "express";
 import cors from "cors";
 import { runDosh, hasKey, type ChatMessage, type DoshContext } from "./dosh.ts";
 import { generateCardArt, hasFalKey } from "./cards.ts";
+import {
+  hasDb,
+  getState,
+  applyEffect,
+  applyEffects,
+  resetProfile,
+  type AppState,
+  type DoshEffect,
+  type Mode,
+} from "./db.ts";
 
 const app = express();
 app.use(cors());
@@ -18,9 +28,110 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     key: hasKey(),
-    model: process.env.DOSH_MODEL || "claude-opus-4-6",
+    model: process.env.DOSH_MODEL || "claude-sonnet-5",
     cardStudio: hasFalKey(),
+    db: hasDb(),
   });
+});
+
+function asMode(v: unknown): Mode {
+  return v === "returning" ? "returning" : "new";
+}
+
+// Build Dosh's grounding context from the persisted state.
+function contextFromState(s: AppState): DoshContext {
+  return {
+    tag: s.tag,
+    name: s.name,
+    usdBalance: s.usd,
+    ngnBalance: s.ngn,
+    nairaPerUsd: s.nairaPerUsd,
+    people: s.contacts.map((c) => ({
+      tag: c.tag,
+      relationship: c.relationship || "",
+      note: c.note,
+    })),
+    justVerified: s.justVerified,
+    accountOpened: s.accountOpened,
+    watching: s.watching,
+  };
+}
+
+// Fallback context when no DB is configured (keeps local dev usable).
+function fallbackContext(mode: Mode): { ctx: DoshContext; state: null } {
+  const ctx: DoshContext =
+    mode === "returning"
+      ? {
+          tag: "@tobi",
+          name: "Tobi Adeyemi",
+          usdBalance: 350,
+          ngnBalance: 0,
+          nairaPerUsd: 1418,
+          people: [
+            { tag: "@mike_edits", relationship: "US client, pays for video editing" },
+            { tag: "Mum", relationship: "family in Enugu" },
+          ],
+          justVerified: false,
+          accountOpened: true,
+          watching: null,
+        }
+      : {
+          tag: "@chidi",
+          name: "Chidi Okafor",
+          usdBalance: 0,
+          ngnBalance: 0,
+          nairaPerUsd: 1418,
+          people: [],
+          justVerified: true,
+          accountOpened: false,
+          watching: null,
+        };
+  return { ctx, state: null };
+}
+
+app.get("/api/state", async (req, res) => {
+  const mode = asMode(req.query.mode);
+  if (!hasDb()) {
+    res.json({ state: null, db: false });
+    return;
+  }
+  try {
+    const state = await getState(mode);
+    res.json({ state, db: true });
+  } catch (err: any) {
+    console.error("State error:", err?.message || err);
+    res.status(500).json({ error: err?.message || "state_failed" });
+  }
+});
+
+app.post("/api/effect", async (req, res) => {
+  const { mode, effect } = req.body as { mode?: string; effect?: DoshEffect };
+  if (!hasDb()) {
+    res.json({ state: null, db: false });
+    return;
+  }
+  try {
+    const state = await applyEffect(asMode(mode), effect || {});
+    res.json({ state, db: true });
+  } catch (err: any) {
+    console.error("Effect error:", err?.message || err);
+    res.status(500).json({ error: err?.message || "effect_failed" });
+  }
+});
+
+app.post("/api/reset", async (req, res) => {
+  const { mode } = req.body as { mode?: string };
+  if (!hasDb()) {
+    res.json({ state: null, db: false });
+    return;
+  }
+  try {
+    const state = await resetProfile(asMode(mode));
+    res.json({ state, db: true });
+  } catch (err: any) {
+    console.error("Reset error:", err?.message || err);
+    res.status(500).json({ error: err?.message || "reset_failed" });
+  }
 });
 
 app.post("/api/card", async (req, res) => {
@@ -43,10 +154,11 @@ app.post("/api/card", async (req, res) => {
 });
 
 app.post("/api/dosh", async (req, res) => {
-  const { messages, context } = req.body as {
+  const { messages, mode: modeInput } = req.body as {
     messages: ChatMessage[];
-    context: DoshContext;
+    mode?: string;
   };
+  const mode = asMode(modeInput);
 
   if (!hasKey()) {
     res.status(200).json({
@@ -60,8 +172,24 @@ app.post("/api/dosh", async (req, res) => {
   }
 
   try {
-    const result = await runDosh(messages, context);
-    res.json(result);
+    let state: AppState | null = null;
+    let ctx: DoshContext;
+    if (hasDb()) {
+      state = await getState(mode);
+      ctx = contextFromState(state);
+    } else {
+      ctx = fallbackContext(mode).ctx;
+    }
+
+    const result = await runDosh(messages, ctx);
+
+    // Non-money effects Dosh performed this turn apply immediately.
+    const actions = Array.isArray(result.actions) ? (result.actions as DoshEffect[]) : [];
+    if (hasDb() && actions.length) {
+      state = await applyEffects(mode, actions);
+    }
+
+    res.json({ reply: result.reply, cards: result.cards, chips: result.chips, state });
   } catch (err: any) {
     console.error("Dosh error:", err?.message || err);
     res.status(500).json({

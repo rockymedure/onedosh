@@ -2,20 +2,22 @@ import { useState } from "react";
 import { t, glass, glassBorder, limeGlow } from "../theme";
 import { Avatar } from "../components/ui";
 import { photoFor } from "../data";
-import type { DoshCard } from "../types";
+import type { DoshCard, DoshEffect } from "../types";
 
 export function CardStack({
   cards,
   onAction,
+  onEffect,
 }: {
   cards?: DoshCard[];
   onAction: (text: string) => void;
+  onEffect?: (effect: DoshEffect) => void;
 }) {
   if (!cards || cards.length === 0) return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
       {cards.map((c, i) => (
-        <CardView key={i} card={c} onAction={onAction} />
+        <CardView key={i} card={c} onAction={onAction} onEffect={onEffect} />
       ))}
     </div>
   );
@@ -48,7 +50,15 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
   );
 }
 
-function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string) => void }) {
+function CardView({
+  card,
+  onAction,
+  onEffect,
+}: {
+  card: DoshCard;
+  onAction: (text: string) => void;
+  onEffect?: (effect: DoshEffect) => void;
+}) {
   const [done, setDone] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareState, setShareState] = useState<null | "shared" | "copied">(null);
@@ -179,6 +189,8 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
             label={cta[action] || "Confirm"}
             onClick={() => {
               setDone("ok");
+              // Money moves only on this explicit tap — apply the gated effect now.
+              if (card.effect && onEffect) onEffect(card.effect);
               onAction(`Confirmed: ${card.title || action}`);
             }}
           />

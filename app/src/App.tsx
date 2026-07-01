@@ -6,8 +6,7 @@ import { TabBar } from "./components/TabBar";
 import { ActivityTab } from "./tabs/ActivityTab";
 import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
-import { health } from "./dosh/api";
-import { context as returningContext, newUserContext } from "./data";
+import { health, resetProfile } from "./dosh/api";
 import type { Tab } from "./types";
 
 type Mode = "returning" | "new";
@@ -19,11 +18,13 @@ const NEW_STARTERS = ["💸 Get paid", "Send money home", "Just exploring"];
 export default function App() {
   const [tab, setTab] = useState<Tab>("dosh");
   const [seed, setSeed] = useState<{ text: string; n: number } | undefined>();
-  const [status, setStatus] = useState<{ key: boolean; model: string } | null>(null);
+  const [status, setStatus] = useState<{ key: boolean; model: string; db?: boolean } | null>(null);
   const [mode, setMode] = useState<Mode>("new");
+  // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    health().then((h) => setStatus({ key: h.key, model: h.model }));
+    health().then((h) => setStatus({ key: h.key, model: h.model, db: h.db }));
   }, []);
 
   function openDosh(prompt: string) {
@@ -31,10 +32,16 @@ export default function App() {
     setTab("dosh");
   }
 
+  async function reset() {
+    await resetProfile(mode);
+    setReloadKey((k) => k + 1);
+    setTab("dosh");
+  }
+
   const isNew = mode === "new";
   const doshProps = isNew
-    ? { ctx: newUserContext, opener: NEW_OPENER, starters: NEW_STARTERS }
-    : { ctx: returningContext };
+    ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
+    : { mode };
 
   return (
     <div
@@ -53,7 +60,7 @@ export default function App() {
         <Header tab={tab} />
         <div style={{ flex: 1, minHeight: 0, padding: "0 16px" }}>
           {tab === "activity" && <ActivityTab onOpenDosh={openDosh} />}
-          {tab === "dosh" && <DoshTab key={mode} seed={seed} {...doshProps} />}
+          {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
           {tab === "money" && <MoneyTab onOpenDosh={openDosh} />}
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
@@ -61,7 +68,7 @@ export default function App() {
         </div>
       </Phone>
 
-      <Legend status={status} mode={mode} onMode={setMode} />
+      <Legend status={status} mode={mode} onMode={setMode} onReset={reset} />
     </div>
   );
 }
@@ -91,10 +98,12 @@ function Legend({
   status,
   mode,
   onMode,
+  onReset,
 }: {
-  status: { key: boolean; model: string } | null;
+  status: { key: boolean; model: string; db?: boolean } | null;
   mode: Mode;
   onMode: (m: Mode) => void;
+  onReset: () => void;
 }) {
   return (
     <div style={{ width: 300, color: "#3B4557", fontFamily: display }}>
@@ -131,6 +140,22 @@ function Legend({
             ? "Cold start: ₦0, no contacts, fresh out of IDV. Watch Dosh drive to the first reliable win — getting paid."
             : "Returning user with balance, contacts and history."}
         </p>
+        <button
+          onClick={onReset}
+          style={{
+            marginTop: 8,
+            border: "1px solid #D0D5DD",
+            borderRadius: 999,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+            background: "#fff",
+            color: "#667085",
+          }}
+        >
+          ↺ Reset this profile
+        </button>
       </div>
       <p style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500 }}>
         Not a fintech app with a chatbot bolted on — a money guy who happens to have a bank behind
@@ -138,9 +163,10 @@ function Legend({
         un-scammed. <b>Money</b> is balance, card, discover. Profile's top-right, always.
       </p>
       <p style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500 }}>
-        Dosh runs on <b>Claude</b> ({status?.model || "…"}). He talks like a person and builds the UI
-        he needs on the fly — receive details, confirm sheets, scam warnings. Money only moves when
-        you tap Confirm. No exceptions.
+        Dosh runs on <b>Claude</b> ({status?.model || "…"}) with real tools — he opens your account,
+        saves contacts, logs payments and moves money for real, persisted in{" "}
+        <b>{status?.db ? "Supabase" : "memory"}</b>. Money only moves when you tap Confirm. No
+        exceptions.
       </p>
       <div
         style={{

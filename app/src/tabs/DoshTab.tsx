@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { t, display, glass, glassBorder, limeGlow } from "../theme";
-import { DoshMark } from "../components/ui";
 import { CardStack } from "../dosh/Cards";
-import { askDosh, type DoshContext } from "../dosh/api";
-import { context as returningContext } from "../data";
-import type { ChatMessage, FeedItem } from "../types";
+import { askDosh, getState, applyEffect, type Mode } from "../dosh/api";
+import type { AppState, ChatMessage, DoshEffect, FeedItem } from "../types";
 
 const OPENER = "Ayy 👋 I'm Dosh — your money guy. Get you paid, move it, make sure nobody plays you. What we doing?";
 
@@ -14,12 +12,12 @@ const STARTERS = ["💸 Get paid", "Send money", "Check my rate"];
 
 export function DoshTab({
   seed,
-  ctx = returningContext,
+  mode = "returning",
   opener = OPENER,
   starters = STARTERS,
 }: {
   seed?: { text: string; n: number };
-  ctx?: DoshContext;
+  mode?: Mode;
   opener?: string;
   starters?: string[];
 }) {
@@ -27,12 +25,17 @@ export function DoshTab({
   const [chips, setChips] = useState<string[]>(starters);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<AppState | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const lastSeed = useRef(0);
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
   }, [feed, busy]);
+
+  useEffect(() => {
+    getState(mode).then(setState);
+  }, [mode]);
 
   useEffect(() => {
     if (seed && seed.n !== lastSeed.current) {
@@ -57,23 +60,33 @@ export function DoshTab({
       content: f.text,
     }));
 
-    const res = await askDosh(history, ctx);
+    const res = await askDosh(history, mode);
     setBusy(false);
     setFeed((f) => [...f, { kind: "dosh", text: res.reply, cards: res.cards }]);
     // Chips come straight from Dosh so they track the dialog. No generic
     // fallback mid-conversation — stale starters would ignore the context.
     setChips(Array.isArray(res.chips) ? res.chips : []);
+    // Dosh may have run tools this turn (opened account, saved a contact,
+    // logged an incoming payment) — reflect the new world state.
+    if (res.state) setState(res.state);
+  }
+
+  // A confirm-gated money move only fires when the user taps Confirm.
+  async function runEffect(effect: DoshEffect) {
+    const next = await applyEffect(mode, effect);
+    if (next) setState(next);
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 84 }}>
+      {state && <LedgerStrip state={state} />}
       <div ref={scroller} style={{ flex: 1, overflowY: "auto", padding: "4px 2px 8px" }}>
         {feed.map((item, i) => (
           <div key={i} className="dosh-enter" style={{ marginBottom: 16 }}>
             {item.kind === "dosh" ? (
               <div>
                 <DoshSay hero={i === 0}>{item.text}</DoshSay>
-                <CardStack cards={item.cards} onAction={send} />
+                <CardStack cards={item.cards} onAction={send} onEffect={runEffect} />
               </div>
             ) : (
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -168,6 +181,49 @@ export function DoshTab({
           ↑
         </button>
       </div>
+    </div>
+  );
+}
+
+function LedgerStrip({ state }: { state: AppState }) {
+  const usd = `$${state.usd.toLocaleString()}`;
+  const ngn = state.ngn > 0 ? `₦${state.ngn.toLocaleString()}` : null;
+  const pills: { label: string; value: string; glow?: boolean }[] = [
+    { label: "Balance", value: ngn ? `${usd} · ${ngn}` : usd, glow: state.usd > 0 || state.ngn > 0 },
+    { label: "Account", value: state.accountOpened ? "Open ✓" : "Not open" },
+    { label: "People", value: String(state.contacts.length) },
+  ];
+  if (state.watching) pills.push({ label: "Watching", value: state.watching });
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 8,
+        overflowX: "auto",
+        padding: "2px 2px 10px",
+      }}
+    >
+      {pills.map((p) => (
+        <div
+          key={p.label}
+          style={{
+            ...glass,
+            border: p.glow ? `1px solid ${t.lime}` : glassBorder,
+            borderRadius: 14,
+            padding: "6px 12px",
+            whiteSpace: "nowrap",
+            boxShadow: p.glow ? limeGlow : glass.boxShadow,
+          }}
+        >
+          <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: t.sub }}>
+            {p.label}
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: t.ink, fontVariantNumeric: "tabular-nums" }}>
+            {p.value}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
