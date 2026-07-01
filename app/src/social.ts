@@ -141,7 +141,7 @@ let SEQ = 100;
 
 // Templates the simulator draws from to keep the feed feeling human + varied.
 function makeEvent(): FeedEvent {
-  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+  const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
   const twoPeople = () => {
     const a = pick(roster);
     let b = pick(roster);

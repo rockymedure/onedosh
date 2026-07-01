@@ -53,6 +53,21 @@ Try: *“get me paid by a US client”*, *“send ₦40k to Mum”*, *“a clien
 
 ---
 
+## Deploy to Railway
+
+The app ships as a **single service**: `npm run build` compiles the Vite client to `app/dist`, and `npm run start` runs the Express server which serves that build *and* the `/api/*` routes on one port (`process.env.PORT`).
+
+1. Create a Railway project from this repo.
+2. In the service settings, set the **Root Directory** to `app` (the app and its `railway.json` live there).
+3. Add the environment variables:
+   - `ANTHROPIC_API_KEY` — required for the live Dosh agent.
+   - `DOSH_MODEL` — optional model override.
+   - `FAL_KEY` — optional, for generative Card Studio art.
+   - `PORT` is provided by Railway automatically; no need to set it.
+4. Railway builds with `npm run build` and starts with `npm run start` (see `app/railway.json`). Health check hits `/api/health`.
+
+---
+
 ## Repo structure
 
 ```
