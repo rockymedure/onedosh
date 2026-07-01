@@ -10,6 +10,8 @@ It contains three things:
 2. **The thinking** — concept docs covering the entity, the users and their jobs, and the design system.
 3. **Visual reference** — the source screens that grounded the aesthetic.
 
+> **See the reasoning as it happened:** [`PROCESS-LOG.md`](PROCESS-LOG.md) is a running commentary on the human judgment behind each change — the same *human-led, AI-accelerated* principle the product is built on, applied to how it’s built.
+
 ---
 
 ## The thesis in one minute
