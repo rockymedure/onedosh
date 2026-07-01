@@ -85,14 +85,25 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
             <span
               style={{ width: 7, height: 7, borderRadius: 4, background: t.lime, boxShadow: `0 0 8px ${t.lime}` }}
             />
-            <span style={{ fontSize: 13, color: "#AEB8CC" }}>Total balance</span>
+            <span style={{ fontSize: 13, color: "#AEB8CC" }}>Your balances</span>
           </div>
-          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 4 }}>
-            <span style={{ color: t.lime }}>$</span>
-            {context.usdBalance.toFixed(2)}
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            <BalanceCell
+              label="Dollars"
+              symbol="$"
+              amount={context.usdBalance.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            />
+            <BalanceCell
+              label="Naira"
+              symbol="₦"
+              amount={context.ngnBalance.toLocaleString()}
+            />
           </div>
-          <div style={{ fontSize: 13, color: "#AEB8CC", marginTop: 2 }}>
-            ₦{context.ngnBalance.toLocaleString()} · rate{" "}
+          <div style={{ fontSize: 12, color: "#AEB8CC", marginTop: 10 }}>
+            Rate{" "}
             <span style={{ color: t.lime, fontWeight: 700 }}>
               ₦{context.nairaPerUsd.toLocaleString()}/$
             </span>
@@ -167,6 +178,34 @@ export function MoneyTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void 
           onMint={mint}
         />
       )}
+    </div>
+  );
+}
+
+function BalanceCell({
+  label,
+  symbol,
+  amount,
+}: {
+  label: string;
+  symbol: string;
+  amount: string;
+}) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: "12px 14px",
+      }}
+    >
+      <div style={{ fontSize: 12, color: "#AEB8CC" }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, marginTop: 2, whiteSpace: "nowrap" }}>
+        <span style={{ color: t.lime }}>{symbol}</span>
+        {amount}
+      </div>
     </div>
   );
 }

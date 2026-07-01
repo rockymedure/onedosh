@@ -53,11 +53,13 @@ export function DoshTab({ seed }: { seed?: { text: string; n: number } }) {
     const res = await askDosh(history, context);
     setBusy(false);
     setFeed((f) => [...f, { kind: "dosh", text: res.reply, cards: res.cards }]);
-    setChips(res.chips?.length ? res.chips : STARTERS);
+    // Chips come straight from Dosh so they track the dialog. No generic
+    // fallback mid-conversation — stale starters would ignore the context.
+    setChips(Array.isArray(res.chips) ? res.chips : []);
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 84 }}>
       <div ref={scroller} style={{ flex: 1, overflowY: "auto", padding: "4px 2px 8px" }}>
         {feed.map((item, i) => (
           <div key={i} className="dosh-enter" style={{ marginBottom: 16 }}>

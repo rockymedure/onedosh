@@ -30,6 +30,13 @@ input {
   from { opacity: 0; transform: translateY(8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* Glowing ring on the squad's next boost marker. Animates only box-shadow so the
+   translate() that centers the marker on the bar is preserved. */
+@keyframes boostPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(207, 242, 63, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(207, 242, 63, 0.1); }
+}
+.boost-next { animation: boostPulse 1.8s ease-in-out infinite; }
 @keyframes pop {
   0% { transform: scale(0.6); opacity: 0; }
   70% { transform: scale(1.08); }

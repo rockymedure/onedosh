@@ -50,8 +50,19 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 
 function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string) => void }) {
   const [done, setDone] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [shareState, setShareState] = useState<null | "shared" | "copied">(null);
 
   if (card.type === "receive_usd") {
+    const details = [
+      card.accountHolder && `Name: ${card.accountHolder}`,
+      `Bank: ${card.bank || "Lead Bank"}`,
+      card.accountNumber && `Account: ${card.accountNumber}`,
+      card.routingNumber && `Routing: ${card.routingNumber}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const shareText = card.shareMessage || `Pay me here 👇\n${details}`;
     return (
       <Shell accent={t.green}>
         <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 8 }}>
@@ -78,10 +89,23 @@ function CardView({ card, onAction }: { card: DoshCard; onAction: (text: string)
         )}
         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
           <Primary
-            label={done === "copy" ? "Copied ✓" : "Copy details"}
-            onClick={() => setDone("copy")}
+            label={copied ? "Copied ✓" : "Copy details"}
+            onClick={async () => {
+              await copyText(details);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1800);
+            }}
           />
-          <Ghost label="Share" onClick={() => onAction("Share my account details")} />
+          <Ghost
+            label={shareState === "shared" ? "Shared ✓" : shareState === "copied" ? "Copied ✓" : "Share"}
+            onClick={async () => {
+              const res = await systemShare(shareText, "Get paid on OneDosh");
+              if (res !== "cancelled") {
+                setShareState(res);
+                setTimeout(() => setShareState(null), 1800);
+              }
+            }}
+          />
         </div>
       </Shell>
     );
@@ -196,6 +220,32 @@ function Primary({ label, onClick }: { label: string; onClick: () => void }) {
       {label}
     </button>
   );
+}
+
+// Fire the native OS share sheet (Web Share API). Falls back to the clipboard
+// on desktop / unsupported browsers. Returns what actually happened so the UI
+// can confirm it.
+async function systemShare(text: string, title = "OneDosh"): Promise<"shared" | "copied" | "cancelled"> {
+  const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+  if (typeof nav.share === "function") {
+    try {
+      await nav.share({ title, text });
+      return "shared";
+    } catch (err) {
+      // User dismissed the sheet — don't fall back, just no-op.
+      if (err instanceof DOMException && err.name === "AbortError") return "cancelled";
+    }
+  }
+  return (await copyText(text)) ? "copied" : "cancelled";
+}
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function Ghost({ label, onClick }: { label: string; onClick: () => void }) {

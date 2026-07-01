@@ -31,6 +31,10 @@ export function faces(ids: string[]) {
 // ---------------------------------------------------------------------------
 // Squads — groups that move money together (ajo / splits / trip funds).
 // ---------------------------------------------------------------------------
+// A milestone unlocks a cash boost once the pot passes `at`. Boosts are funded
+// by the stablecoin APY the pooled balance earns while it sits in the squad.
+export type Milestone = { at: number; boost: number };
+
 export type Squad = {
   id: string;
   name: string;
@@ -41,7 +45,19 @@ export type Squad = {
   goal: number;
   pot: number;
   note: string;
+  apy: number;
+  milestones: Milestone[];
 };
+
+// Sum of boosts already unlocked (yield paid into the pot so far).
+export function earnedBoost(s: Squad): number {
+  return s.milestones.filter((m) => s.pot >= m.at).reduce((sum, m) => sum + m.boost, 0);
+}
+
+// The next boost the squad is climbing toward, or null once fully boosted.
+export function nextMilestone(s: Squad): Milestone | null {
+  return s.milestones.find((m) => s.pot < m.at) ?? null;
+}
 
 export const squads: Squad[] = [
   {
@@ -54,6 +70,12 @@ export const squads: Squad[] = [
     goal: 500_000,
     pot: 340_000,
     note: "Ada dropped ₦5,000",
+    apy: 0.052,
+    milestones: [
+      { at: 250_000, boost: 4_000 },
+      { at: 400_000, boost: 7_500 },
+      { at: 500_000, boost: 12_000 },
+    ],
   },
   {
     id: "studio",
@@ -65,6 +87,11 @@ export const squads: Squad[] = [
     goal: 180_000,
     pot: 132_000,
     note: "Bella paid her share",
+    apy: 0.05,
+    milestones: [
+      { at: 90_000, boost: 1_500 },
+      { at: 180_000, boost: 4_000 },
+    ],
   },
   {
     id: "detty",
@@ -76,6 +103,12 @@ export const squads: Squad[] = [
     goal: 1_200_000,
     pot: 690_000,
     note: "Ngozi joined the fund",
+    apy: 0.058,
+    milestones: [
+      { at: 400_000, boost: 6_000 },
+      { at: 800_000, boost: 15_000 },
+      { at: 1_200_000, boost: 30_000 },
+    ],
   },
 ];
 
@@ -141,7 +174,7 @@ let SEQ = 100;
 
 // Templates the simulator draws from to keep the feed feeling human + varied.
 function makeEvent(): FeedEvent {
-  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+  const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
   const twoPeople = () => {
     const a = pick(roster);
     let b = pick(roster);

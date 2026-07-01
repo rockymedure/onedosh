@@ -1,4 +1,7 @@
 import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import { runDosh, hasKey, type ChatMessage, type DoshContext } from "./dosh.ts";
@@ -9,6 +12,7 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
 const PORT = Number(process.env.PORT || 8787);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -68,6 +72,21 @@ app.post("/api/dosh", async (req, res) => {
     });
   }
 });
+
+// In production, serve the built Vite frontend from the same service and let
+// client-side routing fall back to index.html for non-API GET requests.
+const clientDir = path.resolve(__dirname, "../dist");
+if (fs.existsSync(clientDir)) {
+  app.use(express.static(clientDir));
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api")) {
+      res.sendFile(path.join(clientDir, "index.html"));
+      return;
+    }
+    next();
+  });
+  console.log(`Serving static frontend from ${clientDir}`);
+}
 
 app.listen(PORT, () => {
   console.log(`Dosh server on http://localhost:${PORT}  (key: ${hasKey() ? "yes" : "MISSING"})`);

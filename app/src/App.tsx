@@ -38,12 +38,12 @@ export default function App() {
       <Phone>
         <StatusBar />
         <Header tab={tab} />
-        <div style={{ flex: 1, minHeight: 0, padding: "0 16px 96px" }}>
+        <div style={{ flex: 1, minHeight: 0, padding: "0 16px" }}>
           {tab === "activity" && <ActivityTab onOpenDosh={openDosh} />}
           {tab === "dosh" && <DoshTab seed={seed} />}
           {tab === "money" && <MoneyTab onOpenDosh={openDosh} />}
         </div>
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
           <TabBar tab={tab} onSelect={setTab} />
         </div>
       </Phone>

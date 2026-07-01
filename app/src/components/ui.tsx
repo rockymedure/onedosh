@@ -155,7 +155,7 @@ export function CountUp({
   }, [value, duration]);
 
   return (
-    <span style={style}>
+    <span style={{ fontVariantNumeric: "tabular-nums", ...style }}>
       {prefix}
       {display.toLocaleString()}
     </span>
