@@ -43,4 +43,22 @@ export const context: DoshContext = {
   ],
 };
 
+// Cold start: someone who just finished IDV. No money, no saved people, no
+// history — the make-or-break onboarding moment we want Dosh to own.
+export const newUser: { name: string; tag: string; photo?: string } = {
+  name: "Chidi Okafor",
+  tag: "@chidi",
+  photo: undefined,
+};
+
+export const newUserContext: DoshContext = {
+  tag: newUser.tag,
+  name: newUser.name,
+  usdBalance: 0,
+  ngnBalance: 0,
+  nairaPerUsd: 1418,
+  people: [],
+  justVerified: true,
+};
+
 export const discover = ["View rates", "Increase limits", "Fund via Cash App", "Physical card"];

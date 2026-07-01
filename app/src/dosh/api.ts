@@ -7,6 +7,7 @@ export type DoshContext = {
   ngnBalance: number;
   nairaPerUsd: number;
   people: { tag: string; relationship: string; note?: string }[];
+  justVerified?: boolean;
 };
 
 export async function askDosh(

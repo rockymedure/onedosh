@@ -2,22 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { t, display, glass, glassBorder, limeGlow } from "../theme";
 import { DoshMark } from "../components/ui";
 import { CardStack } from "../dosh/Cards";
-import { askDosh } from "../dosh/api";
-import { context } from "../data";
+import { askDosh, type DoshContext } from "../dosh/api";
+import { context as returningContext } from "../data";
 import type { ChatMessage, FeedItem } from "../types";
 
-const OPENER: FeedItem = {
-  kind: "dosh",
-  text: "Ayy 👋 I'm Dosh — your money guy. Get you paid, move it, make sure nobody plays you. What we doing?",
-};
+const OPENER = "Ayy 👋 I'm Dosh — your money guy. Get you paid, move it, make sure nobody plays you. What we doing?";
 
 // Smart defaults only used at the very start / if the agent returns none.
 // Every other turn the chips come straight from Dosh, based on the last action.
 const STARTERS = ["💸 Get paid", "Send money", "Check my rate"];
 
-export function DoshTab({ seed }: { seed?: { text: string; n: number } }) {
-  const [feed, setFeed] = useState<FeedItem[]>([OPENER]);
-  const [chips, setChips] = useState<string[]>(STARTERS);
+export function DoshTab({
+  seed,
+  ctx = returningContext,
+  opener = OPENER,
+  starters = STARTERS,
+}: {
+  seed?: { text: string; n: number };
+  ctx?: DoshContext;
+  opener?: string;
+  starters?: string[];
+}) {
+  const [feed, setFeed] = useState<FeedItem[]>([{ kind: "dosh", text: opener }]);
+  const [chips, setChips] = useState<string[]>(starters);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
@@ -50,7 +57,7 @@ export function DoshTab({ seed }: { seed?: { text: string; n: number } }) {
       content: f.text,
     }));
 
-    const res = await askDosh(history, context);
+    const res = await askDosh(history, ctx);
     setBusy(false);
     setFeed((f) => [...f, { kind: "dosh", text: res.reply, cards: res.cards }]);
     // Chips come straight from Dosh so they track the dialog. No generic

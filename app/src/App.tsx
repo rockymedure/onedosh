@@ -7,12 +7,20 @@ import { ActivityTab } from "./tabs/ActivityTab";
 import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
 import { health } from "./dosh/api";
+import { context as returningContext, newUserContext } from "./data";
 import type { Tab } from "./types";
+
+type Mode = "returning" | "new";
+
+const NEW_OPENER =
+  "You're in 🎉 IDV done, account's live. I'm Dosh — your money guy. Let's land your first payment, fast. You here to get paid, or send money home?";
+const NEW_STARTERS = ["💸 Get paid", "Send money home", "Just exploring"];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("dosh");
   const [seed, setSeed] = useState<{ text: string; n: number } | undefined>();
   const [status, setStatus] = useState<{ key: boolean; model: string } | null>(null);
+  const [mode, setMode] = useState<Mode>("new");
 
   useEffect(() => {
     health().then((h) => setStatus({ key: h.key, model: h.model }));
@@ -22,6 +30,11 @@ export default function App() {
     setSeed({ text: prompt, n: Date.now() });
     setTab("dosh");
   }
+
+  const isNew = mode === "new";
+  const doshProps = isNew
+    ? { ctx: newUserContext, opener: NEW_OPENER, starters: NEW_STARTERS }
+    : { ctx: returningContext };
 
   return (
     <div
@@ -40,7 +53,7 @@ export default function App() {
         <Header tab={tab} />
         <div style={{ flex: 1, minHeight: 0, padding: "0 16px" }}>
           {tab === "activity" && <ActivityTab onOpenDosh={openDosh} />}
-          {tab === "dosh" && <DoshTab seed={seed} />}
+          {tab === "dosh" && <DoshTab key={mode} seed={seed} {...doshProps} />}
           {tab === "money" && <MoneyTab onOpenDosh={openDosh} />}
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
@@ -48,7 +61,7 @@ export default function App() {
         </div>
       </Phone>
 
-      <Legend status={status} />
+      <Legend status={status} mode={mode} onMode={setMode} />
     </div>
   );
 }
@@ -74,11 +87,50 @@ function Phone({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Legend({ status }: { status: { key: boolean; model: string } | null }) {
+function Legend({
+  status,
+  mode,
+  onMode,
+}: {
+  status: { key: boolean; model: string } | null;
+  mode: Mode;
+  onMode: (m: Mode) => void;
+}) {
   return (
     <div style={{ width: 300, color: "#3B4557", fontFamily: display }}>
       <div style={{ fontSize: 26, fontWeight: 700, color: "#12141C", letterSpacing: "-0.03em" }}>
         Meet Dosh<span style={{ color: t.coral }}>.</span>
+      </div>
+
+      <div style={{ margin: "12px 0 4px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#98A2B3", marginBottom: 6 }}>
+          Who's arriving
+        </div>
+        <div style={{ display: "inline-flex", background: "#EDEBE3", borderRadius: 999, padding: 3 }}>
+          {(["new", "returning"] as Mode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => onMode(m)}
+              style={{
+                border: "none",
+                borderRadius: 999,
+                padding: "7px 14px",
+                fontSize: 12.5,
+                fontWeight: 700,
+                cursor: "pointer",
+                background: mode === m ? t.navy : "transparent",
+                color: mode === m ? "#fff" : "#667085",
+              }}
+            >
+              {m === "new" ? "Just verified" : "Returning"}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "#667085", marginTop: 8 }}>
+          {mode === "new"
+            ? "Cold start: ₦0, no contacts, fresh out of IDV. Watch Dosh drive to the first reliable win — getting paid."
+            : "Returning user with balance, contacts and history."}
+        </p>
       </div>
       <p style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500 }}>
         Not a fintech app with a chatbot bolted on — a money guy who happens to have a bank behind
@@ -108,7 +160,9 @@ function Legend({ status }: { status: { key: boolean; model: string } | null }) 
             : "● No API key — add ANTHROPIC_API_KEY to app/.env"}
       </div>
       <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "#667085", marginTop: 14 }}>
-        Try: "get me paid by a US client", "send ₦40k to Mum", "someone overpaid and wants a refund".
+        {mode === "new"
+          ? 'Try: "Get paid", then "A client abroad" — watch Dosh set up your US account and save your first contact.'
+          : 'Try: "get me paid by a US client", "send ₦40k to Mum", "someone overpaid and wants a refund".'}
       </p>
     </div>
   );
