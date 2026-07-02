@@ -48,7 +48,10 @@ export function IdvFlow({ onComplete }: { onComplete: () => void }) {
       style={{
         flex: 1,
         minHeight: 0,
-        background: "#fff",
+        // Match the app chrome (Header/shell) so IDV feels continuous with the
+        // rest of OneDosh rather than a stark white island. White rows/inputs
+        // then read as cards on paper, like everywhere else in the app.
+        background: t.bg,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
