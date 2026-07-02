@@ -1,19 +1,25 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { t, display, limeGlow } from "../theme";
 import { Avatar, AvatarStack, CountUp, LiveDot, SectionLabel } from "../components/ui";
 import { me } from "../data";
 import { gigThumb } from "../gigs";
+import { getJobs, getState, type Mode } from "../dosh/api";
 import { earnedBoost, faces, nairaShort, nextMilestone, p, type FeedEvent, type GamePool, type Squad } from "../social";
 import { useLiveSocial } from "../useLiveSocial";
+import type { Job } from "../types";
 
 export function ActivityTab({
   justVerified = false,
+  mode,
   onOpenDosh,
   onOpenWork,
+  onOpenGig,
 }: {
   justVerified?: boolean;
+  mode: Mode;
   onOpenDosh: (prompt: string) => void;
   onOpenWork: () => void;
+  onOpenGig: (job: Job, booked: boolean) => void;
 }) {
   const live = useLiveSocial();
 
@@ -22,6 +28,7 @@ export function ActivityTab({
       <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
         <TagHero />
         <WorkEntry onOpenWork={onOpenWork} />
+        <NewGigs mode={mode} onOpenWork={onOpenWork} onOpenGig={onOpenGig} />
         <EmptyNetwork onOpenDosh={onOpenDosh} />
       </div>
     );
@@ -32,6 +39,8 @@ export function ActivityTab({
       <TagHero />
 
       <WorkEntry onOpenWork={onOpenWork} />
+
+      <NewGigs mode={mode} onOpenWork={onOpenWork} onOpenGig={onOpenGig} />
 
       <SectionLabel>Active now — tap to pay</SectionLabel>
       <ActiveRail ids={live.onlineIds} onOpenDosh={onOpenDosh} />
@@ -170,6 +179,237 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
         </span>
       </button>
     </>
+  );
+}
+
+/* ---------------------------------------------------------------- New gigs */
+
+// A swipeable rail of the freshest gigs, sitting on the Explore home. Tap any
+// card to drop straight into its detail page; the trailing card jumps to the
+// full Work board. Booked gigs are flagged so the detail opens in the right state.
+function NewGigs({
+  mode,
+  onOpenWork,
+  onOpenGig,
+}: {
+  mode: Mode;
+  onOpenWork: () => void;
+  onOpenGig: (job: Job, booked: boolean) => void;
+}) {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let alive = true;
+    getJobs().then((all) => alive && setJobs(all));
+    getState(mode).then((s) => {
+      if (alive) setBookedIds(new Set((s?.bookings ?? []).map((b) => b.jobId)));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [mode]);
+
+  // Freshest first: gigs in your circle lead, then the rest — capped to a short,
+  // browsable set so the rail stays a teaser, not the whole board.
+  const featured = useMemo(() => {
+    const inNet = jobs.filter((j) => j.inNetwork);
+    const rest = jobs.filter((j) => !j.inNetwork);
+    return [...inNet, ...rest].slice(0, 8);
+  }, [jobs]);
+
+  if (featured.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 2px" }}>
+        <SectionLabel>New gigs ✨</SectionLabel>
+        <button
+          onClick={onOpenWork}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: t.sub,
+            fontSize: 12.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            padding: "0 0 8px",
+          }}
+        >
+          See all ›
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          overflowX: "auto",
+          padding: "2px 2px 10px",
+          scrollSnapType: "x mandatory",
+          marginBottom: 8,
+        }}
+      >
+        {featured.map((job) => (
+          <GigMiniCard
+            key={job.id}
+            job={job}
+            booked={bookedIds.has(job.id)}
+            onOpen={() => onOpenGig(job, bookedIds.has(job.id))}
+          />
+        ))}
+        <SeeAllCard onOpenWork={onOpenWork} count={jobs.length} />
+      </div>
+    </div>
+  );
+}
+
+function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpen: () => void }) {
+  const src = gigThumb(job.id);
+  return (
+    <button
+      onClick={onOpen}
+      style={{
+        flexShrink: 0,
+        width: 190,
+        scrollSnapAlign: "start",
+        textAlign: "left",
+        border: job.inNetwork ? `1px solid ${t.lime}` : `1px solid ${t.border}`,
+        background: "#fff",
+        borderRadius: t.radiusInner,
+        padding: 0,
+        overflow: "hidden",
+        cursor: "pointer",
+        boxShadow: job.inNetwork ? limeGlow : "0 1px 4px rgba(20,28,51,0.06)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          height: 96,
+          background: t.navy,
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        {src ? (
+          <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span style={{ color: t.lime, fontWeight: 800, fontSize: 34 }}>{job.title.slice(0, 1)}</span>
+        )}
+        {job.inNetwork && (
+          <span
+            style={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              fontSize: 9.5,
+              fontWeight: 800,
+              letterSpacing: 0.3,
+              textTransform: "uppercase",
+              color: t.limeInk,
+              background: t.lime,
+              borderRadius: 6,
+              padding: "2px 6px",
+            }}
+          >
+            In your circle
+          </span>
+        )}
+        {booked && (
+          <span
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              fontSize: 10,
+              fontWeight: 800,
+              color: "#fff",
+              background: "rgba(20,28,51,0.75)",
+              borderRadius: 999,
+              padding: "3px 8px",
+            }}
+          >
+            Booked 🤝
+          </span>
+        )}
+      </div>
+
+      <div style={{ padding: "10px 11px 12px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+        <div
+          style={{
+            fontSize: 13.5,
+            fontWeight: 800,
+            color: t.ink,
+            lineHeight: 1.25,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {job.title}
+        </div>
+        <div
+          style={{
+            fontSize: 11.5,
+            color: t.sub,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {job.posterName}
+        </div>
+        <div style={{ marginTop: "auto", paddingTop: 6, display: "flex", alignItems: "baseline", gap: 4 }}>
+          <span style={{ fontSize: 15, fontWeight: 800, color: t.green }}>${job.budgetUsd.toLocaleString()}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: t.faint }}>{job.cadence}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function SeeAllCard({ onOpenWork, count }: { onOpenWork: () => void; count: number }) {
+  return (
+    <button
+      onClick={onOpenWork}
+      style={{
+        flexShrink: 0,
+        width: 132,
+        scrollSnapAlign: "start",
+        border: `1.5px dashed ${t.faint}`,
+        background: "transparent",
+        borderRadius: t.radiusInner,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        color: t.sub,
+        cursor: "pointer",
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          background: t.bg,
+          display: "grid",
+          placeItems: "center",
+          fontSize: 20,
+          color: t.navy,
+          fontWeight: 800,
+        }}
+      >
+        ›
+      </div>
+      <span style={{ fontSize: 13, fontWeight: 800, color: t.ink }}>See all gigs</span>
+      {count > 0 && <span style={{ fontSize: 11.5, fontWeight: 600, color: t.sub }}>{count} open</span>}
+    </button>
   );
 }
 

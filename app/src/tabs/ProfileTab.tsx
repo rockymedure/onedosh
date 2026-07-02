@@ -30,7 +30,17 @@ const GROUPS: { title: string; rows: Row[] }[] = [
   },
 ];
 
-export function ProfileTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
+type Mode = "new" | "returning";
+
+export function ProfileTab({
+  onOpenDosh,
+  mode,
+  onMode,
+}: {
+  onOpenDosh: (prompt: string) => void;
+  mode: Mode;
+  onMode: (m: Mode) => void;
+}) {
   return (
     <div style={{ height: "100%", overflowY: "auto", paddingBottom: 24 }}>
       {/* Identity */}
@@ -51,6 +61,66 @@ export function ProfileTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => voi
             {me.name}
           </div>
           <div style={{ fontSize: 13.5, fontWeight: 700, color: "#5A6B1F" }}>{me.tag}</div>
+        </div>
+      </div>
+
+      {/* Prototype control: swap between a cold-start and returning persona. */}
+      <div style={{ marginBottom: 16 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 0.5,
+            textTransform: "uppercase",
+            color: t.faint,
+            margin: "0 2px 8px",
+          }}
+        >
+          Prototype
+        </div>
+        <div style={{ background: "#fff", border: `1px solid ${t.border}`, borderRadius: t.radiusInner, padding: 14 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: t.ink }}>Account state</div>
+          <div style={{ fontSize: 12.5, color: t.sub, marginTop: 2, marginBottom: 12 }}>
+            Preview the app as a brand-new or a returning user.
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              background: t.bg,
+              border: `1px solid ${t.border}`,
+              borderRadius: 999,
+              padding: 4,
+            }}
+          >
+            {([
+              { id: "new", label: "Just verified" },
+              { id: "returning", label: "Returning" },
+            ] as { id: Mode; label: string }[]).map((opt) => {
+              const on = mode === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => onMode(opt.id)}
+                  aria-pressed={on}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    borderRadius: 999,
+                    padding: "9px 0",
+                    fontSize: 13,
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    background: on ? t.navy : "transparent",
+                    color: on ? "#fff" : t.sub,
+                    transition: "background 150ms ease, color 150ms ease",
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

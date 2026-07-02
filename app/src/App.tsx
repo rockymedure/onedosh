@@ -85,6 +85,15 @@ export default function App() {
     setTab("dosh");
   }
 
+  // Same persona switch, but stays on the current screen (used by the Profile
+  // toggle) so the module reflects the choice in place.
+  function pickMode(m: Mode) {
+    setMode(m);
+    setReloadKey((k) => k + 1);
+    setShowWork(false);
+    setGig(null);
+  }
+
   const isNew = mode === "new";
   const doshProps = isNew
     ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
@@ -111,7 +120,7 @@ export default function App() {
       />
       <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
         {showProfile ? (
-          <ProfileTab onOpenDosh={openDosh} />
+          <ProfileTab onOpenDosh={openDosh} mode={mode} onMode={pickMode} />
         ) : (
           <>
             {tab === "activity" &&
@@ -125,7 +134,13 @@ export default function App() {
                   onOpenGig={(job, booked) => setGig({ job, booked })}
                 />
               ) : (
-                <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
+                <ActivityTab
+                  justVerified={isNew}
+                  mode={mode}
+                  onOpenDosh={openDosh}
+                  onOpenWork={() => setShowWork(true)}
+                  onOpenGig={(job, booked) => setGig({ job, booked })}
+                />
               ))}
             {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
             {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
