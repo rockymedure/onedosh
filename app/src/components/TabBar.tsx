@@ -1,5 +1,6 @@
-import { m3, font } from "../theme";
-import { DoshMark, Ripple } from "./ui";
+import { m3, font, t as tokens } from "../theme";
+import { Avatar, Ripple } from "./ui";
+import { me } from "../data";
 import type { Tab } from "../types";
 
 // Material 3 (Android) Navigation Bar.
@@ -26,16 +27,16 @@ export function TabBar({ tab, onSelect }: { tab: Tab; onSelect: (t: Tab) => void
         icon={(a) => <ActivityIcon active={a} />}
       />
       <NavItem
-        label="Dosh"
-        active={tab === "dosh"}
-        onClick={() => onSelect("dosh")}
-        icon={() => <DoshMark size={24} />}
-      />
-      <NavItem
         label="Money"
         active={tab === "money"}
         onClick={() => onSelect("money")}
         icon={(a) => <MoneyIcon active={a} />}
+      />
+      <NavItem
+        label="Profile"
+        active={tab === "profile"}
+        onClick={() => onSelect("profile")}
+        icon={(a) => <ProfileIcon active={a} />}
       />
     </nav>
   );
@@ -119,6 +120,24 @@ function ActivityIcon({ active }: { active: boolean }) {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+// Profile — the user's own avatar, ringed in lime when active.
+function ProfileIcon({ active }: { active: boolean }) {
+  return (
+    <div
+      style={{
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        display: "grid",
+        placeItems: "center",
+        boxShadow: active ? `0 0 0 2px ${tokens.lime}` : "none",
+      }}
+    >
+      <Avatar label={me.name} src={me.photo} size={24} />
+    </div>
   );
 }
 

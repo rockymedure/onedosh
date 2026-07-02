@@ -108,6 +108,21 @@ input {
   to { transform: scale(1); opacity: 0; }
 }
 
+/* Dosh overlay slides up as a layer above everything. */
+@keyframes sheetUp {
+  from { opacity: 0; transform: translateY(6%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sheet-up { animation: sheetUp 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+
+/* Floating Dosh button springs in. */
+@keyframes fabIn {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.fab-in { animation: fabIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.35) both; }
+
 /* Hide scrollbars everywhere while keeping scroll behaviour intact. */
 * {
   scrollbar-width: none; /* Firefox */
