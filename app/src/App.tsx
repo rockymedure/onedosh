@@ -107,7 +107,6 @@ export default function App() {
               mode={mode}
               onOpenDosh={openDosh}
               onOpenGig={(job, booked) => setGig({ job, booked })}
-              embedded
             />
           ) : (
             <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
