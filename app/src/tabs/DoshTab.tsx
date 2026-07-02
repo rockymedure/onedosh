@@ -129,6 +129,7 @@ export function DoshTab({
                 fontSize: 13.5,
                 fontWeight: 700,
                 whiteSpace: "nowrap",
+                flexShrink: 0,
                 boxShadow: i === 0 ? limeGlow : glass.boxShadow,
                 animationDelay: `${i * 0.04}s`,
               }}
