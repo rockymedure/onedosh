@@ -139,12 +139,12 @@ export default function App() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 28,
-        padding: 24,
+        gap: 40,
+        padding: "32px 24px",
         flexWrap: "wrap",
       }}
     >
@@ -241,8 +241,12 @@ function Phone({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
+        // Fixed handset width, but the height shrinks to fit shorter desktop
+        // windows so the frame is never clipped. The app inside scrolls.
         width: 380,
-        height: 780,
+        flexShrink: 0,
+        height: "min(780px, calc(100dvh - 64px))",
+        maxHeight: "calc(100dvh - 64px)",
         background: t.bg,
         borderRadius: 32,
         border: "10px solid #0C1220",
