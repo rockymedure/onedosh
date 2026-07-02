@@ -22,21 +22,21 @@ export function TabBar({ tab, onSelect }: { tab: Tab; onSelect: (t: Tab) => void
         }}
       >
         <TabItem label="Activity" active={tab === "activity"} onClick={() => onSelect("activity")}>
-          <ActivityIcon active={tab === "activity"} />
+          <ActivityIcon />
         </TabItem>
         <TabItem label="Dosh" active={tab === "dosh"} onClick={() => onSelect("dosh")}>
           <DoshMark size={30} />
         </TabItem>
         <TabItem label="Money" active={tab === "money"} onClick={() => onSelect("money")}>
-          <MoneyIcon active={tab === "money"} />
+          <MoneyIcon />
         </TabItem>
       </div>
     </div>
   );
 }
 
-// A live "pulse" waveform for Activity, with a lime beat dot.
-function ActivityIcon({ active }: { active: boolean }) {
+// A clean "pulse" waveform for Activity.
+function ActivityIcon() {
   return (
     <svg width={25} height={25} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
       <path
@@ -46,18 +46,17 @@ function ActivityIcon({ active }: { active: boolean }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx={9.2} cy={6.5} r={1.7} fill={t.lime} stroke="#fff" strokeWidth={0.6} className={active ? "coin-alive" : undefined} />
     </svg>
   );
 }
 
-// A centered wallet for Money, with a lime coin that glows when active.
-function MoneyIcon({ active }: { active: boolean }) {
+// A centered wallet for Money.
+function MoneyIcon() {
   return (
     <svg width={25} height={25} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
       <rect x={3} y={6} width={18} height={12.5} rx={3.4} stroke="currentColor" strokeWidth={2} />
       <path d="M3 10.2H21" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-      <circle cx={16.4} cy={14.4} r={1.9} fill={t.lime} stroke="#fff" strokeWidth={0.6} className={active ? "coin-alive" : undefined} />
+      <path d="M15 12.2h4a1.4 1.4 0 011.4 1.4v0a1.4 1.4 0 01-1.4 1.4h-4z" stroke="currentColor" strokeWidth={2} strokeLinejoin="round" />
     </svg>
   );
 }

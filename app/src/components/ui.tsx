@@ -249,7 +249,13 @@ export function Chip({
   );
 }
 
-export function SectionLabel({ children }: { children: React.ReactNode }) {
+export function SectionLabel({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
   return (
     <div
       style={{
@@ -259,6 +265,7 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
         textTransform: "uppercase",
         color: t.faint,
         margin: "6px 2px",
+        ...style,
       }}
     >
       {children}

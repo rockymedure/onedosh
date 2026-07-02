@@ -12,8 +12,8 @@ import type { Tab } from "./types";
 type Mode = "returning" | "new";
 
 const NEW_OPENER =
-  "You're in 🎉 IDV done, account's live. I'm Dosh — your money guy. Let's land your first payment, fast. You here to get paid, or send money home?";
-const NEW_STARTERS = ["💸 Get paid", "Send money home", "Just exploring"];
+  "You're in 🎉 IDV done, account's live. I'm Dosh — your money guy. First move: let's put some money in your wallet from your own card so it's ready to go. Or if someone's about to pay you, we can set that up instead.";
+const NEW_STARTERS = ["Add money", "💸 Get paid", "Just exploring"];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("dosh");
@@ -58,10 +58,10 @@ export default function App() {
       <Phone>
         <StatusBar />
         <Header tab={tab} />
-        <div style={{ flex: 1, minHeight: 0, padding: "0 16px" }}>
-          {tab === "activity" && <ActivityTab onOpenDosh={openDosh} />}
+        <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
+          {tab === "activity" && <ActivityTab justVerified={isNew} onOpenDosh={openDosh} />}
           {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
-          {tab === "money" && <MoneyTab onOpenDosh={openDosh} />}
+          {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
           <TabBar tab={tab} onSelect={setTab} />

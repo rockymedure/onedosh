@@ -5,8 +5,23 @@ import { me } from "../data";
 import { earnedBoost, faces, nairaShort, nextMilestone, p, type FeedEvent, type GamePool, type Squad } from "../social";
 import { useLiveSocial } from "../useLiveSocial";
 
-export function ActivityTab({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
+export function ActivityTab({
+  justVerified = false,
+  onOpenDosh,
+}: {
+  justVerified?: boolean;
+  onOpenDosh: (prompt: string) => void;
+}) {
   const live = useLiveSocial();
+
+  if (justVerified) {
+    return (
+      <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
+        <TagHero />
+        <EmptyNetwork onOpenDosh={onOpenDosh} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
@@ -70,6 +85,110 @@ function TagHero() {
           }}
         >
           Share tag
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------ Empty network */
+
+function EmptyNetwork({ onOpenDosh }: { onOpenDosh: (p: string) => void }) {
+  const rows = [
+    { emoji: "⚡", title: "Live network", body: "See who's active and pay them in a tap." },
+    { emoji: "💰", title: "Squads", body: "Group savings pots that earn yield with friends." },
+    { emoji: "🎮", title: "Prediction pools", body: "Stake on match nights — winners split the pot." },
+  ];
+  return (
+    <div
+      style={{
+        border: `1px solid ${t.border}`,
+        background: "#fff",
+        borderRadius: t.radiusCard,
+        padding: 20,
+        marginTop: 4,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 54,
+          height: 54,
+          borderRadius: 27,
+          margin: "0 auto",
+          background: `linear-gradient(135deg, ${t.lime}, #DCF77A)`,
+          display: "grid",
+          placeItems: "center",
+          fontSize: 26,
+        }}
+      >
+        🌱
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: t.ink, fontFamily: display, marginTop: 12 }}>
+        Your network starts here
+      </div>
+      <p style={{ fontSize: 13.5, color: t.sub, lineHeight: 1.5, margin: "6px auto 0", maxWidth: 260 }}>
+        Get paid or pay someone and they show up here. Squads, pools and a live feed unlock as your circle grows.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", margin: "18px 0" }}>
+        {rows.map((r) => (
+          <div key={r.title} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: t.bg,
+                display: "grid",
+                placeItems: "center",
+                fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              {r.emoji}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: t.ink }}>{r.title}</div>
+              <div style={{ fontSize: 12.5, color: t.sub, lineHeight: 1.4 }}>{r.body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          onClick={() => onOpenDosh("I want to get paid")}
+          style={{
+            flex: 1,
+            border: "none",
+            background: t.lime,
+            color: t.limeInk,
+            borderRadius: 12,
+            padding: "12px",
+            fontSize: 14,
+            fontWeight: 800,
+            boxShadow: limeGlow,
+            cursor: "pointer",
+          }}
+        >
+          Get paid
+        </button>
+        <button
+          onClick={() => onOpenDosh("I want to invite a friend to OneDosh")}
+          style={{
+            flex: 1,
+            border: `1px solid ${t.border}`,
+            background: "#fff",
+            color: t.ink,
+            borderRadius: 12,
+            padding: "12px",
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Invite a friend
         </button>
       </div>
     </div>

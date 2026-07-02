@@ -4,7 +4,7 @@ import { CardStack } from "../dosh/Cards";
 import { askDosh, getState, applyEffect, type Mode } from "../dosh/api";
 import type { AppState, ChatMessage, DoshEffect, FeedItem } from "../types";
 
-const OPENER = "Ayy 👋 I'm Dosh — your money guy. Get you paid, move it, make sure nobody plays you. What we doing?";
+const OPENER = "Hey 👋 I'm Dosh — your money guy. I get you paid, move it, and make sure nobody plays you. What are we doing?";
 
 // Smart defaults only used at the very start / if the agent returns none.
 // Every other turn the chips come straight from Dosh, based on the last action.
