@@ -130,6 +130,8 @@ function CardView({
       stake: "Place bet",
       chip: "Chip in",
       join: "Join",
+      fund: "Confirm top-up",
+      add_card: "Link card",
     };
     const doneTitle: Record<string, string> = {
       send: "Sent ✓",
@@ -138,11 +140,15 @@ function CardView({
       stake: "Bet placed 🎯",
       chip: "Chipped in ✓",
       join: "You're in ✓",
+      fund: "Topped up ✓",
+      add_card: "Card linked ✓",
     };
     const doneSub: Record<string, string> = {
       stake: "Good luck — I'll watch the result.",
       chip: "Nice one. Pot's climbing.",
       join: "You're on the board.",
+      fund: "Money's in your wallet.",
+      add_card: "You can fund your wallet now.",
     };
     if (done) {
       return (

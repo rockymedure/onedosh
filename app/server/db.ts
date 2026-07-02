@@ -33,6 +33,7 @@ export type AppState = {
   accountOpened: boolean;
   justVerified: boolean;
   watching: string | null;
+  cardLast4: string | null;
   contacts: Contact[];
   transactions: Txn[];
 };
@@ -41,6 +42,7 @@ export type AppState = {
 // Dosh emits them; money moves ride on a confirm card and only apply on tap.
 export type DoshEffect = {
   openAccount?: boolean;
+  attachCard?: { last4?: string };
   addContact?: { tag?: string; name?: string; relationship?: string; note?: string };
   usdDelta?: number;
   ngnDelta?: number;
@@ -50,8 +52,8 @@ export type DoshEffect = {
 };
 
 const SEED: Record<Mode, Record<string, unknown>> = {
-  new: { mode: "new", tag: "@chidi", name: "Chidi Okafor", usd: 0, ngn: 0, naira_per_usd: 1418, account_opened: false, just_verified: true, watching: null },
-  returning: { mode: "returning", tag: "@tobi", name: "Tobi Adeyemi", usd: 350, ngn: 0, naira_per_usd: 1418, account_opened: true, just_verified: false, watching: null },
+  new: { mode: "new", tag: "@chidi", name: "Chidi Okafor", usd: 0, ngn: 0, naira_per_usd: 1418, account_opened: false, just_verified: true, watching: null, card_last4: null },
+  returning: { mode: "returning", tag: "@tobi", name: "Tobi Adeyemi", usd: 350, ngn: 0, naira_per_usd: 1418, account_opened: true, just_verified: false, watching: null, card_last4: "4821" },
 };
 
 const SEED_CONTACTS: Record<Mode, Contact[]> = {
@@ -83,6 +85,7 @@ type ProfileRow = {
   account_opened: boolean;
   just_verified: boolean;
   watching: string | null;
+  card_last4: string | null;
 };
 
 function toState(mode: Mode, p: ProfileRow, contacts: any[], txns: any[]): AppState {
@@ -96,6 +99,7 @@ function toState(mode: Mode, p: ProfileRow, contacts: any[], txns: any[]): AppSt
     accountOpened: p.account_opened,
     justVerified: p.just_verified,
     watching: p.watching,
+    cardLast4: p.card_last4 ?? null,
     contacts: contacts.map((c) => ({ tag: c.tag, name: c.name, relationship: c.relationship, note: c.note })),
     transactions: txns.map((t) => ({
       kind: t.kind,
@@ -126,11 +130,14 @@ export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> 
 
   const update: Record<string, unknown> = {};
   if (e.openAccount && !p.account_opened) update.account_opened = true;
+  if (e.attachCard && !p.card_last4) {
+    update.card_last4 = e.attachCard.last4 || String(Math.floor(1000 + Math.random() * 9000));
+  }
   if (typeof e.usdDelta === "number" && e.usdDelta !== 0) update.usd = Math.max(0, Number(p.usd) + e.usdDelta);
   if (typeof e.ngnDelta === "number" && e.ngnDelta !== 0) update.ngn = Math.max(0, Number(p.ngn) + e.ngnDelta);
   if (e.watch !== undefined) update.watching = e.watch;
   // First real action means they're no longer a blank just-verified user.
-  if (p.just_verified && (update.account_opened || e.addContact || update.usd !== undefined || update.ngn !== undefined)) {
+  if (p.just_verified && (update.account_opened || update.card_last4 || e.addContact || update.usd !== undefined || update.ngn !== undefined)) {
     update.just_verified = false;
   }
   if (Object.keys(update).length) {

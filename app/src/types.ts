@@ -11,7 +11,7 @@ export type DoshCard =
     }
   | {
       type: "confirm";
-      action?: "send" | "convert" | "hold" | "stake" | "chip" | "join";
+      action?: "send" | "convert" | "hold" | "stake" | "chip" | "join" | "fund" | "add_card";
       title?: string;
       fromLabel?: string;
       toLabel?: string;
@@ -34,6 +34,7 @@ export type DoshCard =
 
 export type DoshEffect = {
   openAccount?: boolean;
+  attachCard?: { last4?: string };
   addContact?: { tag?: string; name?: string; relationship?: string; note?: string };
   usdDelta?: number;
   ngnDelta?: number;
@@ -55,6 +56,7 @@ export type AppState = {
   accountOpened: boolean;
   justVerified: boolean;
   watching: string | null;
+  cardLast4: string | null;
   contacts: Contact[];
   transactions: Txn[];
 };

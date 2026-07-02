@@ -52,6 +52,7 @@ function contextFromState(s: AppState): DoshContext {
     justVerified: s.justVerified,
     accountOpened: s.accountOpened,
     watching: s.watching,
+    cardOnFile: s.cardLast4,
   };
 }
 
@@ -72,6 +73,7 @@ function fallbackContext(mode: Mode): { ctx: DoshContext; state: null } {
           justVerified: false,
           accountOpened: true,
           watching: null,
+          cardOnFile: "4821",
         }
       : {
           tag: "@chidi",
@@ -83,6 +85,7 @@ function fallbackContext(mode: Mode): { ctx: DoshContext; state: null } {
           justVerified: true,
           accountOpened: false,
           watching: null,
+          cardOnFile: null,
         };
   return { ctx, state: null };
 }
