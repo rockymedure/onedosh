@@ -73,44 +73,149 @@ function CardBlock() {
   );
 }
 
+// The card before the first payment lands. It is a *real* OneDosh card — same
+// dark face and geometry as the live one — shown inactive (dimmed, not-yet-
+// activated) but fully action-oriented: your name is already on it, and one tap
+// gets your first payment to activate it. It should feel almost yours.
 function EmptyCard({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
   return (
     <button
       onClick={() => onOpenDosh("I want to get paid")}
+      aria-label="Activate your OneDosh card — get your first payment"
       style={{
+        position: "relative",
         width: "100%",
         aspectRatio: "1.586 / 1",
         borderRadius: t.radiusCard,
-        border: `2px dashed ${t.border}`,
-        background: "rgba(255,255,255,0.5)",
+        border: "none",
+        padding: 18,
+        overflow: "hidden",
+        cursor: "pointer",
+        textAlign: "left",
+        color: "#fff",
+        background: CARD.art.kind === "template" ? CARD.art.background : t.navy,
+        boxShadow: "0 12px 28px rgba(20,28,51,0.20)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        cursor: "pointer",
-        color: t.sub,
-        textAlign: "center",
-        padding: 20,
+        justifyContent: "space-between",
       }}
     >
+      {/* Inactive scrim — dims the face so it reads as not-yet-activated, without
+          killing its color. */}
       <span
+        aria-hidden
         style={{
-          width: 46,
-          height: 46,
-          borderRadius: 23,
-          background: t.navy,
-          display: "grid",
-          placeItems: "center",
-          fontSize: 22,
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(160deg, rgba(5,7,11,0.28), rgba(5,7,11,0.58))",
         }}
-      >
-        🔒
-      </span>
-      <span style={{ fontSize: 15, fontWeight: 800, color: t.ink }}>Your card unlocks when money lands</span>
-      <span style={{ fontSize: 12.5, maxWidth: 240, lineHeight: 1.4 }}>
-        Get your first payment and Dosh spins up your OneDosh card — tap to start.
-      </span>
+      />
+      {/* A soft lime glow, breathing slowly — the card is inactive but alive,
+          waiting to light up. */}
+      <span
+        aria-hidden
+        className="card-breathe"
+        style={{
+          position: "absolute",
+          bottom: -60,
+          left: -40,
+          width: 160,
+          height: 160,
+          borderRadius: "50%",
+          background: t.lime,
+          filter: "blur(48px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Header: brand (dimmed) + "Not active yet" status */}
+      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: -0.3, opacity: 0.6 }}>
+          One<span style={{ color: t.lime }}>Dosh</span>
+        </span>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: 0.4,
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.78)",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.16)",
+            borderRadius: 999,
+            padding: "3px 9px",
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.4)" }} />
+          Not active yet
+        </span>
+      </div>
+
+      {/* Chip — dimmed, present, waiting */}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 10, opacity: 0.5 }}>
+        <span
+          aria-hidden
+          style={{
+            width: 34,
+            height: 26,
+            borderRadius: 5,
+            background: "linear-gradient(135deg, #F7E7A8, #C9A34B 55%, #E8D08A)",
+            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.18)",
+          }}
+        />
+      </div>
+
+      {/* Footer: your name already on it + masked number, with a live CTA */}
+      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 15,
+              letterSpacing: 2.5,
+              fontWeight: 600,
+              fontVariantNumeric: "tabular-nums",
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            ••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••
+          </div>
+          <div
+            style={{
+              fontSize: 12.5,
+              fontWeight: 700,
+              color: "#fff",
+              textTransform: "uppercase",
+              letterSpacing: 0.6,
+              marginTop: 8,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {context.name}
+          </div>
+        </div>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            fontSize: 12.5,
+            fontWeight: 800,
+            color: t.limeInk,
+            background: t.lime,
+            borderRadius: 999,
+            padding: "8px 13px",
+            boxShadow: limeGlow,
+            flexShrink: 0,
+          }}
+        >
+          Activate →
+        </span>
+      </div>
     </button>
   );
 }

@@ -79,6 +79,14 @@ input {
   animation: shimmer 2.4s linear infinite;
 }
 
+/* Inactive card "breathing" — a slow glow that swells and settles so the not-
+   yet-activated card reads as alive and waiting, rather than empty. */
+@keyframes cardBreathe {
+  0%, 100% { opacity: 0.32; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.04); }
+}
+.card-breathe { animation: cardBreathe 4.6s ease-in-out infinite; }
+
 /* Gentle bob for presence / live chips */
 @keyframes bob {
   0%, 100% { transform: translateY(0); }
