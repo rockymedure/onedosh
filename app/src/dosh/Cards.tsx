@@ -2,7 +2,35 @@ import { useState } from "react";
 import { t, glass, glassBorder, limeGlow } from "../theme";
 import { Avatar } from "../components/ui";
 import { photoFor } from "../data";
+import { gigThumb } from "../gigs";
 import type { DoshCard, DoshEffect } from "../types";
+
+// Square gig thumbnail with a graceful fallback to a monogram tile.
+function GigThumb({ id, title, size = 52 }: { id?: string; title: string; size?: number }) {
+  const src = gigThumb(id);
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 12,
+        overflow: "hidden",
+        flexShrink: 0,
+        background: t.navy,
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      {src ? (
+        <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <span style={{ color: t.lime, fontWeight: 800, fontSize: size * 0.42 }}>
+          {title.slice(0, 1).toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export function CardStack({
   cards,
@@ -227,8 +255,8 @@ function CardView({
               boxShadow: j.inNetwork ? limeGlow : glass.boxShadow,
             }}
           >
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-              <div style={{ fontSize: 22, lineHeight: 1 }}>{j.emoji || "💼"}</div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <GigThumb id={j.id} title={j.title} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 800, fontSize: 14, color: t.ink }}>{j.title}</span>

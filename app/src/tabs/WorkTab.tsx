@@ -1,7 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
 import { t, display, glass, glassBorder, limeGlow } from "../theme";
 import { getJobs, getState, type Mode } from "../dosh/api";
+import { gigThumb } from "../gigs";
 import type { Booking, Job } from "../types";
+
+function Thumb({ id, title, size }: { id?: string; title: string; size: number }) {
+  const src = gigThumb(id);
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 12,
+        overflow: "hidden",
+        flexShrink: 0,
+        background: t.navy,
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      {src ? (
+        <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <span style={{ color: t.lime, fontWeight: 800, fontSize: size * 0.42 }}>
+          {title.slice(0, 1).toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+}
 
 type Filter = "all" | "retainer" | "oneoff" | "network";
 
@@ -62,7 +89,7 @@ export function WorkTab({ mode, onOpenDosh }: { mode: Mode; onOpenDosh: (prompt:
                   boxShadow: limeGlow,
                 }}
               >
-                <div style={{ fontSize: 20 }}>{b.emoji}</div>
+                <Thumb id={b.jobId} title={b.title} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 13.5, color: t.ink }}>{b.title}</div>
                   <div style={{ fontSize: 12, color: t.sub }}>
@@ -70,7 +97,7 @@ export function WorkTab({ mode, onOpenDosh }: { mode: Mode; onOpenDosh: (prompt:
                   </div>
                 </div>
                 <button
-                  onClick={() => onOpenDosh(`Chase the payment for my "${b.title}" gig with ${b.posterName}`)}
+                  onClick={() => onOpenDosh(`What's the status on my "${b.title}" gig with ${b.posterName}?`)}
                   style={{
                     border: "none",
                     background: t.navy,
@@ -82,7 +109,7 @@ export function WorkTab({ mode, onOpenDosh }: { mode: Mode; onOpenDosh: (prompt:
                     whiteSpace: "nowrap",
                   }}
                 >
-                  Get paid
+                  Status
                 </button>
               </div>
             ))}
@@ -141,7 +168,7 @@ function GigCard({ job, booked, onOpenDosh }: { job: Job; booked: boolean; onOpe
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-        <div style={{ fontSize: 26, lineHeight: 1 }}>{job.emoji}</div>
+        <Thumb id={job.id} title={job.title} size={64} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <span style={{ fontWeight: 800, fontSize: 15, color: t.ink }}>{job.title}</span>

@@ -20,7 +20,7 @@ export function TabBar({ tab, onSelect }: { tab: Tab; onSelect: (t: Tab) => void
       }}
     >
       <NavItem
-        label="Activity"
+        label="Explore"
         active={tab === "activity"}
         onClick={() => onSelect("activity")}
         icon={(a) => <ActivityIcon active={a} />}
