@@ -1,25 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { t, display, limeGlow } from "../theme";
 import { Avatar, AvatarStack, CountUp, LiveDot, SectionLabel } from "../components/ui";
 import { me } from "../data";
 import { gigThumb } from "../gigs";
-import { getJobs, getState, type Mode } from "../dosh/api";
 import { earnedBoost, faces, nairaShort, nextMilestone, p, type FeedEvent, type GamePool, type Squad } from "../social";
 import { useLiveSocial } from "../useLiveSocial";
-import type { Job } from "../types";
 
 export function ActivityTab({
   justVerified = false,
-  mode,
   onOpenDosh,
   onOpenWork,
-  onOpenGig,
 }: {
   justVerified?: boolean;
-  mode: Mode;
   onOpenDosh: (prompt: string) => void;
   onOpenWork: () => void;
-  onOpenGig: (job: Job, booked: boolean) => void;
 }) {
   const live = useLiveSocial();
 
@@ -28,7 +22,6 @@ export function ActivityTab({
       <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
         <TagHero />
         <WorkEntry onOpenWork={onOpenWork} />
-        <NewGigs mode={mode} onOpenWork={onOpenWork} onOpenGig={onOpenGig} />
         <EmptyNetwork onOpenDosh={onOpenDosh} />
       </div>
     );
@@ -39,8 +32,6 @@ export function ActivityTab({
       <TagHero />
 
       <WorkEntry onOpenWork={onOpenWork} />
-
-      <NewGigs mode={mode} onOpenWork={onOpenWork} onOpenGig={onOpenGig} />
 
       <SectionLabel>Active now — tap to pay</SectionLabel>
       <ActiveRail ids={live.onlineIds} onOpenDosh={onOpenDosh} />
@@ -108,7 +99,7 @@ function TagHero() {
 
 /* -------------------------------------------------------------- Work entry */
 
-// Entry point on Explore that drills into the full Work board.
+// Simple gig-promo module on Explore that drills into the full Work board.
 function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
   const preview = ["yt-editor", "tiktok", "thumbs"];
   return (
@@ -125,7 +116,7 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
           color: "#fff",
           borderRadius: t.radiusCard,
           padding: 14,
-          marginBottom: 12,
+          marginBottom: 14,
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -179,250 +170,6 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
         </span>
       </button>
     </>
-  );
-}
-
-/* ---------------------------------------------------------------- New gigs */
-
-// A swipeable rail of the freshest gigs. It's a sub-section of the Work block
-// above (same "Work 💼" header, hugging the hero) so the two read as one thing:
-// tap the hero to browse everything, or swipe a card to jump straight into its
-// detail. Booked gigs are flagged so the detail opens in the right state.
-function NewGigs({
-  mode,
-  onOpenWork,
-  onOpenGig,
-}: {
-  mode: Mode;
-  onOpenWork: () => void;
-  onOpenGig: (job: Job, booked: boolean) => void;
-}) {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    let alive = true;
-    getJobs().then((all) => alive && setJobs(all));
-    getState(mode).then((s) => {
-      if (alive) setBookedIds(new Set((s?.bookings ?? []).map((b) => b.jobId)));
-    });
-    return () => {
-      alive = false;
-    };
-  }, [mode]);
-
-  // Freshest first: gigs in your circle lead, then the rest — capped to a short,
-  // browsable set so the rail stays a teaser, not the whole board.
-  const featured = useMemo(() => {
-    const inNet = jobs.filter((j) => j.inNetwork);
-    const rest = jobs.filter((j) => !j.inNetwork);
-    return [...inNet, ...rest].slice(0, 8);
-  }, [jobs]);
-
-  if (featured.length === 0) return null;
-
-  return (
-    <div style={{ marginBottom: 14 }}>
-      {/* A lightweight sub-header, deliberately smaller than a SectionLabel, so
-          the rail nests under the Work hero instead of reading as a new feature. */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "0 2px 8px",
-        }}
-      >
-        <span style={{ fontSize: 13, fontWeight: 800, color: t.ink }}>Fresh gigs</span>
-        <button
-          onClick={onOpenWork}
-          style={{
-            border: "none",
-            background: "transparent",
-            color: t.sub,
-            fontSize: 12.5,
-            fontWeight: 700,
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          See all ›
-        </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "stretch",
-          gap: 10,
-          overflowX: "auto",
-          padding: "2px 2px 6px",
-          scrollSnapType: "x mandatory",
-        }}
-      >
-        {featured.map((job) => (
-          <GigMiniCard
-            key={job.id}
-            job={job}
-            booked={bookedIds.has(job.id)}
-            onOpen={() => onOpenGig(job, bookedIds.has(job.id))}
-          />
-        ))}
-        <SeeAllCard onOpenWork={onOpenWork} count={jobs.length} />
-      </div>
-    </div>
-  );
-}
-
-function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpen: () => void }) {
-  const src = gigThumb(job.id);
-  return (
-    <button
-      onClick={onOpen}
-      style={{
-        flexShrink: 0,
-        width: 172,
-        scrollSnapAlign: "start",
-        textAlign: "left",
-        border: job.inNetwork ? `1px solid ${t.lime}` : `1px solid ${t.border}`,
-        background: "#fff",
-        borderRadius: t.radiusInner,
-        padding: 0,
-        overflow: "hidden",
-        cursor: "pointer",
-        boxShadow: job.inNetwork ? limeGlow : "0 1px 4px rgba(20,28,51,0.06)",
-        display: "block",
-      }}
-    >
-      <div
-        style={{
-          position: "relative",
-          height: 100,
-          background: t.navy,
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        {src ? (
-          <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        ) : (
-          <span style={{ color: t.lime, fontWeight: 800, fontSize: 34 }}>{job.title.slice(0, 1)}</span>
-        )}
-        {job.inNetwork && (
-          <span
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              fontSize: 9.5,
-              fontWeight: 800,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-              color: t.limeInk,
-              background: t.lime,
-              borderRadius: 6,
-              padding: "2px 6px",
-            }}
-          >
-            In your circle
-          </span>
-        )}
-        {booked && (
-          <span
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              fontSize: 10,
-              fontWeight: 800,
-              color: "#fff",
-              background: "rgba(20,28,51,0.75)",
-              borderRadius: 999,
-              padding: "3px 8px",
-            }}
-          >
-            Booked 🤝
-          </span>
-        )}
-      </div>
-
-      <div style={{ padding: "13px 11px 12px" }}>
-        {/* Fixed two-line title area keeps every card aligned and clamps long
-            titles cleanly from the top (no stray last-word fragments). */}
-        <div
-          style={{
-            height: 34,
-            fontSize: 13.5,
-            fontWeight: 800,
-            color: t.ink,
-            lineHeight: "17px",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {job.title}
-        </div>
-        <div
-          style={{
-            marginTop: 4,
-            fontSize: 11.5,
-            color: t.sub,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {job.posterName}
-        </div>
-        <div style={{ marginTop: 8, display: "flex", alignItems: "baseline", gap: 4 }}>
-          <span style={{ fontSize: 15, fontWeight: 800, color: t.green }}>${job.budgetUsd.toLocaleString()}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: t.faint }}>{job.cadence}</span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function SeeAllCard({ onOpenWork, count }: { onOpenWork: () => void; count: number }) {
-  return (
-    <button
-      onClick={onOpenWork}
-      style={{
-        flexShrink: 0,
-        width: 120,
-        scrollSnapAlign: "start",
-        border: `1.5px dashed ${t.faint}`,
-        background: "transparent",
-        borderRadius: t.radiusInner,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        color: t.sub,
-        cursor: "pointer",
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          background: t.bg,
-          display: "grid",
-          placeItems: "center",
-          fontSize: 20,
-          color: t.navy,
-          fontWeight: 800,
-        }}
-      >
-        ›
-      </div>
-      <span style={{ fontSize: 13, fontWeight: 800, color: t.ink }}>See all gigs</span>
-      {count > 0 && <span style={{ fontSize: 11.5, fontWeight: 600, color: t.sub }}>{count} open</span>}
-    </button>
   );
 }
 

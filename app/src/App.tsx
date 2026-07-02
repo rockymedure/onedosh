@@ -169,10 +169,8 @@ export default function App() {
               ) : (
                 <ActivityTab
                   justVerified={isNew}
-                  mode={mode}
                   onOpenDosh={openDosh}
                   onOpenWork={() => setShowWork(true)}
-                  onOpenGig={(job, booked) => setGig({ job, booked })}
                 />
               ))}
             {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
