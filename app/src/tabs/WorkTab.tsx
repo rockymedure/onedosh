@@ -30,13 +30,18 @@ function Thumb({ id, title, size }: { id?: string; title: string; size: number }
   );
 }
 
-type Filter = "all" | "retainer" | "oneoff" | "network";
+// Skill-set families. Each raw job `category` maps into one of these so the
+// board reads as a few meaningful sections instead of one gig per header.
+type FamilyId = "video" | "design" | "writing" | "dev" | "audio" | "business" | "more";
+type ChipId = "all" | "network" | FamilyId;
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "retainer", label: "Retainers" },
-  { id: "oneoff", label: "One-off" },
-  { id: "network", label: "In your circle" },
+const FAMILIES: { id: FamilyId; label: string; emoji: string; cats: string[] }[] = [
+  { id: "video", label: "Video & Motion", emoji: "🎬", cats: ["Video editing", "Creator"] },
+  { id: "design", label: "Design", emoji: "🎨", cats: ["Design"] },
+  { id: "writing", label: "Writing", emoji: "✍️", cats: ["Writing"] },
+  { id: "dev", label: "Development", emoji: "💻", cats: ["Development"] },
+  { id: "audio", label: "Audio & Music", emoji: "🎧", cats: ["Audio", "Music"] },
+  { id: "business", label: "Business & Admin", emoji: "🗂️", cats: ["Assistant", "Finance"] },
 ];
 
 export function WorkTab({
@@ -50,7 +55,7 @@ export function WorkTab({
 }) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<ChipId>("all");
 
   useEffect(() => {
     getJobs().then(setJobs);
@@ -59,14 +64,39 @@ export function WorkTab({
 
   const bookedIds = useMemo(() => new Set(bookings.map((b) => b.jobId)), [bookings]);
 
-  const shown = useMemo(() => {
-    return jobs.filter((j) => {
-      if (filter === "retainer") return j.tags.includes("retainer") || j.cadence.includes("month");
-      if (filter === "oneoff") return !(j.tags.includes("retainer") || j.cadence.includes("month"));
-      if (filter === "network") return j.inNetwork;
-      return true;
-    });
-  }, [jobs, filter]);
+  // Group every gig into its skill family (keeping FAMILIES order), plus a
+  // catch-all for any category we haven't mapped yet. Empty families drop out.
+  const sections = useMemo(() => {
+    const byFamily = new Map<FamilyId, Job[]>();
+    for (const j of jobs) {
+      const fam = FAMILIES.find((f) => f.cats.includes(j.category))?.id ?? "more";
+      const list = byFamily.get(fam) ?? [];
+      list.push(j);
+      byFamily.set(fam, list);
+    }
+    const ordered = [
+      ...FAMILIES,
+      { id: "more" as FamilyId, label: "More gigs", emoji: "✨", cats: [] as string[] },
+    ];
+    return ordered
+      .map((f) => ({ id: f.id, label: f.label, emoji: f.emoji, jobs: byFamily.get(f.id) ?? [] }))
+      .filter((s) => s.jobs.length > 0);
+  }, [jobs]);
+
+  const netJobs = useMemo(() => jobs.filter((j) => j.inNetwork), [jobs]);
+
+  const chips: { id: ChipId; label: string; emoji?: string }[] = [
+    { id: "all", label: "All" },
+    ...(netJobs.length ? [{ id: "network" as ChipId, label: "In your circle", emoji: "⭐" }] : []),
+    ...sections.map((s) => ({ id: s.id as ChipId, label: s.label, emoji: s.emoji })),
+  ];
+
+  const visibleSections =
+    filter === "all"
+      ? sections
+      : filter === "network"
+        ? [{ id: "network" as ChipId, label: "In your circle", emoji: "⭐", jobs: netJobs }]
+        : sections.filter((s) => s.id === filter);
 
   return (
     <div style={{ height: "100%", overflowY: "auto", paddingBottom: 24 }}>
@@ -117,12 +147,12 @@ export function WorkTab({
       )}
 
       <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "0 2px 12px" }}>
-        {FILTERS.map((f) => {
-          const on = filter === f.id;
+        {chips.map((c) => {
+          const on = filter === c.id;
           return (
             <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
+              key={c.id}
+              onClick={() => setFilter(c.id)}
               style={{
                 border: on ? "none" : glassBorder,
                 background: on ? t.navy : glass.background,
@@ -133,21 +163,57 @@ export function WorkTab({
                 fontSize: 12.5,
                 fontWeight: 700,
                 whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
               }}
             >
-              {f.label}
+              {c.emoji && <span style={{ fontSize: 13 }}>{c.emoji}</span>}
+              {c.label}
             </button>
           );
         })}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {shown.map((j) => (
-          <GigCard key={j.id} job={j} booked={bookedIds.has(j.id)} onOpenDosh={onOpenDosh} onOpenGig={onOpenGig} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {visibleSections.map((sec) => (
+          <div key={sec.id}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 10px" }}>
+              <span style={{ fontSize: 16 }}>{sec.emoji}</span>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: t.ink, letterSpacing: "-0.01em" }}>
+                {sec.label}
+              </span>
+              <span
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 800,
+                  color: t.sub,
+                  background: "rgba(20,28,51,0.07)",
+                  borderRadius: 999,
+                  minWidth: 20,
+                  textAlign: "center",
+                  padding: "2px 7px",
+                }}
+              >
+                {sec.jobs.length}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {sec.jobs.map((j) => (
+                <GigCard
+                  key={j.id}
+                  job={j}
+                  booked={bookedIds.has(j.id)}
+                  onOpenDosh={onOpenDosh}
+                  onOpenGig={onOpenGig}
+                />
+              ))}
+            </div>
+          </div>
         ))}
-        {shown.length === 0 && (
+        {visibleSections.length === 0 && (
           <div style={{ fontSize: 13, color: t.sub, padding: 12, textAlign: "center" }}>
-            No gigs in this filter yet.
+            No gigs here yet.
           </div>
         )}
       </div>
