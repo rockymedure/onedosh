@@ -6,11 +6,12 @@ import { TabBar } from "./components/TabBar";
 import { DoshMark, Ripple } from "./components/ui";
 import { ActivityTab } from "./tabs/ActivityTab";
 import { WorkTab } from "./tabs/WorkTab";
+import { GigDetail } from "./tabs/GigDetail";
 import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
 import { ProfileTab } from "./tabs/ProfileTab";
 import { health, resetProfile } from "./dosh/api";
-import type { Tab } from "./types";
+import type { Tab, Job } from "./types";
 
 type Mode = "returning" | "new";
 
@@ -44,6 +45,8 @@ export default function App() {
   // Work lives inside Explore as a drill-in; this tracks whether we're on the
   // Explore home or pushed into the Work board (which shows a back arrow).
   const [showWork, setShowWork] = useState(false);
+  // Deeper drill-in: a single gig's detail page (pushed on top of the board).
+  const [gig, setGig] = useState<{ job: Job; booked: boolean } | null>(null);
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
   const isHandset = useIsHandset();
@@ -55,6 +58,7 @@ export default function App() {
   // Tapping a bottom-nav destination resets any drill-in (Android-style).
   function selectTab(next: Tab) {
     setShowWork(false);
+    setGig(null);
     setTab(next);
   }
 
@@ -67,6 +71,7 @@ export default function App() {
     await resetProfile(mode);
     setReloadKey((k) => k + 1);
     setShowWork(false);
+    setGig(null);
     setTab("activity");
     setDoshOpen(true);
   }
@@ -74,6 +79,7 @@ export default function App() {
   function changeMode(m: Mode) {
     setMode(m);
     setShowWork(false);
+    setGig(null);
     setTab("activity");
     setDoshOpen(true);
   }
@@ -84,18 +90,25 @@ export default function App() {
     : { mode };
 
   const onWorkBoard = tab === "activity" && showWork;
+  // Header back + title for the Explore drill-in stack (Work board → gig detail).
+  const back = gig ? () => setGig(null) : onWorkBoard ? () => setShowWork(false) : undefined;
+  const drillTitle = gig ? "Gig" : onWorkBoard ? "Work" : undefined;
   const shell = (
     <>
       {!isHandset && <StatusBar />}
-      <Header
-        tab={tab}
-        onBack={onWorkBoard ? () => setShowWork(false) : undefined}
-        title={onWorkBoard ? "Work" : undefined}
-      />
+      <Header tab={tab} onBack={back} title={drillTitle} />
       <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
         {tab === "activity" &&
-          (onWorkBoard ? (
-            <WorkTab key={`work-${mode}-${reloadKey}`} mode={mode} onOpenDosh={openDosh} embedded />
+          (gig ? (
+            <GigDetail job={gig.job} booked={gig.booked} onOpenDosh={openDosh} />
+          ) : onWorkBoard ? (
+            <WorkTab
+              key={`work-${mode}-${reloadKey}`}
+              mode={mode}
+              onOpenDosh={openDosh}
+              onOpenGig={(job, booked) => setGig({ job, booked })}
+              embedded
+            />
           ) : (
             <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
           ))}

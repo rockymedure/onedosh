@@ -42,10 +42,12 @@ const FILTERS: { id: Filter; label: string }[] = [
 export function WorkTab({
   mode,
   onOpenDosh,
+  onOpenGig,
   embedded = false,
 }: {
   mode: Mode;
   onOpenDosh: (prompt: string) => void;
+  onOpenGig: (job: Job, booked: boolean) => void;
   embedded?: boolean;
 }) {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -158,7 +160,7 @@ export function WorkTab({
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {shown.map((j) => (
-          <GigCard key={j.id} job={j} booked={bookedIds.has(j.id)} onOpenDosh={onOpenDosh} />
+          <GigCard key={j.id} job={j} booked={bookedIds.has(j.id)} onOpenDosh={onOpenDosh} onOpenGig={onOpenGig} />
         ))}
         {shown.length === 0 && (
           <div style={{ fontSize: 13, color: t.sub, padding: 12, textAlign: "center" }}>
@@ -170,15 +172,32 @@ export function WorkTab({
   );
 }
 
-function GigCard({ job, booked, onOpenDosh }: { job: Job; booked: boolean; onOpenDosh: (p: string) => void }) {
+function GigCard({
+  job,
+  booked,
+  onOpenDosh,
+  onOpenGig,
+}: {
+  job: Job;
+  booked: boolean;
+  onOpenDosh: (p: string) => void;
+  onOpenGig: (job: Job, booked: boolean) => void;
+}) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpenGig(job, booked)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onOpenGig(job, booked);
+      }}
       style={{
         ...glass,
         border: job.inNetwork ? `1px solid ${t.lime}` : glassBorder,
         borderRadius: t.radiusInner,
         padding: 14,
         boxShadow: job.inNetwork ? limeGlow : glass.boxShadow,
+        cursor: "pointer",
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -231,7 +250,10 @@ function GigCard({ job, booked, onOpenDosh }: { job: Job; booked: boolean; onOpe
           </span>
         ) : (
           <button
-            onClick={() => onOpenDosh(`Book the "${job.title}" gig from ${job.posterName} (${job.posterHandle})`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDosh(`Book the "${job.title}" gig from ${job.posterName} (${job.posterHandle})`);
+            }}
             style={{
               border: "none",
               background: t.lime,
