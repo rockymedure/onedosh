@@ -2,35 +2,8 @@ import { useState } from "react";
 import { t, glass, glassBorder, limeGlow } from "../theme";
 import { Avatar } from "../components/ui";
 import { photoFor } from "../data";
-import { gigThumb } from "../gigs";
-import type { DoshCard, DoshEffect } from "../types";
-
-// Square gig thumbnail with a graceful fallback to a monogram tile.
-function GigThumb({ id, title, size = 52 }: { id?: string; title: string; size?: number }) {
-  const src = gigThumb(id);
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 12,
-        overflow: "hidden",
-        flexShrink: 0,
-        background: t.navy,
-        display: "grid",
-        placeItems: "center",
-      }}
-    >
-      {src ? (
-        <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      ) : (
-        <span style={{ color: t.lime, fontWeight: 800, fontSize: size * 0.42 }}>
-          {title.slice(0, 1).toUpperCase()}
-        </span>
-      )}
-    </div>
-  );
-}
+import { gigThumb, useGigCatalog } from "../gigs";
+import type { DoshCard, DoshEffect, JobCardItem } from "../types";
 
 export function CardStack({
   cards,
@@ -238,61 +211,7 @@ function CardView({
   }
 
   if (card.type === "job_board") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {card.intro && (
-          <div style={{ fontSize: 13, fontWeight: 700, color: t.sub, padding: "0 2px" }}>{card.intro}</div>
-        )}
-        {(card.jobs || []).map((j) => (
-          <div
-            key={j.id}
-            className="dosh-enter"
-            style={{
-              ...glass,
-              border: j.inNetwork ? `1px solid ${t.lime}` : glassBorder,
-              borderRadius: t.radiusInner,
-              padding: 14,
-              boxShadow: j.inNetwork ? limeGlow : glass.boxShadow,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <GigThumb id={j.id} title={j.title} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 800, fontSize: 14, color: t.ink }}>{j.title}</span>
-                  {j.inNetwork && (
-                    <span
-                      style={{
-                        fontSize: 9.5,
-                        fontWeight: 800,
-                        letterSpacing: 0.3,
-                        textTransform: "uppercase",
-                        color: t.limeInk,
-                        background: "rgba(207,242,63,0.5)",
-                        borderRadius: 6,
-                        padding: "2px 6px",
-                      }}
-                    >
-                      In your circle
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: 12.5, color: t.sub, marginTop: 2 }}>
-                  {j.poster}
-                  {j.handle ? ` · ${j.handle}` : ""}
-                </div>
-                {j.budget && (
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: t.green, marginTop: 4 }}>{j.budget}</div>
-                )}
-              </div>
-            </div>
-            <div style={{ marginTop: 10 }}>
-              <Primary label="Book this gig" onClick={() => onAction(`Book the "${j.title}" gig from ${j.poster || j.handle || "them"}`)} />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <JobBoardCard card={card} onAction={onAction} />;
   }
 
   if (card.type === "scam_warning") {
@@ -331,6 +250,181 @@ function CardView({
         <div style={{ color: t.sub, fontSize: 13, marginTop: 4 }}>{card.subtitle}</div>
       )}
     </Shell>
+  );
+}
+
+// Rich, image-forward gig cards for chat. The model picks which gigs to show
+// (by id); we enrich each with the real catalog data so details are accurate.
+function JobBoardCard({
+  card,
+  onAction,
+}: {
+  card: Extract<DoshCard, { type: "job_board" }>;
+  onAction: (text: string) => void;
+}) {
+  const catalog = useGigCatalog();
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {card.intro && (
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: t.sub, padding: "0 2px" }}>{card.intro}</div>
+      )}
+      {(card.jobs || []).map((j) => (
+        <GigListing key={j.id} item={j} full={catalog[j.id]} onAction={onAction} />
+      ))}
+    </div>
+  );
+}
+
+function GigListing({
+  item,
+  full,
+  onAction,
+}: {
+  item: JobCardItem;
+  full?: {
+    title: string;
+    posterName: string;
+    posterHandle: string;
+    blurb: string;
+    location: string;
+    budgetUsd: number;
+    cadence: string;
+    tags: string[];
+    inNetwork: boolean;
+  };
+  onAction: (text: string) => void;
+}) {
+  const title = full?.title || item.title;
+  const posterName = full?.posterName || item.poster || "Client";
+  const handle = full?.posterHandle || item.handle || "";
+  const location = full?.location || "";
+  const blurb = full?.blurb || "";
+  const tags = (full?.tags || item.tags || []).slice(0, 3);
+  const inNetwork = full?.inNetwork ?? item.inNetwork ?? false;
+  // Budget comes ONLY from the trusted catalog — the model sometimes emits a
+  // wrong figure, so we never show its number (avoids a bad-price flash).
+  const budget = full ? `$${full.budgetUsd.toLocaleString()}` : "";
+  const cadence = full?.cadence || "";
+  const src = gigThumb(item.id);
+
+  return (
+    <div
+      className="dosh-enter"
+      style={{
+        ...glass,
+        border: inNetwork ? `1.5px solid ${t.lime}` : glassBorder,
+        borderRadius: t.radiusCard,
+        overflow: "hidden",
+        boxShadow: inNetwork ? limeGlow : glass.boxShadow,
+      }}
+    >
+      {/* Cover */}
+      <div style={{ position: "relative", height: 150, background: t.navy }}>
+        {src && <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to top, rgba(12,18,32,0.55) 0%, rgba(12,18,32,0) 45%)",
+          }}
+        />
+        {inNetwork && (
+          <span
+            style={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: 0.4,
+              textTransform: "uppercase",
+              color: t.limeInk,
+              background: t.lime,
+              borderRadius: 8,
+              padding: "4px 8px",
+              boxShadow: limeGlow,
+            }}
+          >
+            In your circle
+          </span>
+        )}
+        {budget && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 10,
+              right: 10,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 4,
+              color: "#fff",
+              fontWeight: 800,
+            }}
+          >
+            <span style={{ fontSize: 20, letterSpacing: "-0.02em" }}>{budget}</span>
+            {cadence && <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>{cadence}</span>}
+          </div>
+        )}
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: 14 }}>
+        <div style={{ fontWeight: 800, fontSize: 16, color: t.ink, letterSpacing: "-0.01em" }}>{title}</div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          <Avatar label={posterName} src={photoFor(handle || posterName)} size={22} />
+          <div style={{ fontSize: 12.5, color: t.sub, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ fontWeight: 700, color: t.ink }}>{posterName}</span>
+            {handle ? ` · ${handle}` : ""}
+            {location ? ` · ${location}` : ""}
+          </div>
+        </div>
+
+        {blurb && (
+          <div
+            style={{
+              fontSize: 13,
+              color: t.sub,
+              lineHeight: 1.45,
+              marginTop: 8,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {blurb}
+          </div>
+        )}
+
+        {tags.length > 0 && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: t.sub,
+                  background: "rgba(20,28,51,0.06)",
+                  borderRadius: 7,
+                  padding: "3px 8px",
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div style={{ marginTop: 12 }}>
+          <Primary
+            label="Book with Dosh"
+            onClick={() => onAction(`Book the "${title}" gig from ${posterName}${handle ? ` (${handle})` : ""}`)}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 

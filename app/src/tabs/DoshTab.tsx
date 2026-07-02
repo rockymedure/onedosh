@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { t, display, glass, glassBorder, limeGlow } from "../theme";
+import { Ripple } from "../components/ui";
 import { CardStack } from "../dosh/Cards";
 import { askDosh, getState, applyEffect, type Mode } from "../dosh/api";
 import type { AppState, ChatMessage, DoshEffect, FeedItem } from "../types";
@@ -118,6 +119,8 @@ export function DoshTab({
               className="pop"
               style={{
                 ...(i === 0 ? {} : glass),
+                position: "relative",
+                overflow: "hidden",
                 border: i === 0 ? "none" : glassBorder,
                 background: i === 0 ? t.lime : glass.background,
                 color: i === 0 ? t.limeInk : t.navy,
@@ -131,6 +134,7 @@ export function DoshTab({
               }}
             >
               {c}
+              <Ripple color="rgba(20,28,51,0.18)" />
             </button>
           ))}
         </div>
@@ -166,6 +170,8 @@ export function DoshTab({
           onClick={() => send(input)}
           disabled={busy}
           style={{
+            position: "relative",
+            overflow: "hidden",
             border: "none",
             background: t.lime,
             color: t.limeInk,
@@ -178,6 +184,7 @@ export function DoshTab({
           }}
         >
           ↑
+          <Ripple color="rgba(20,28,51,0.22)" />
         </button>
       </div>
     </div>

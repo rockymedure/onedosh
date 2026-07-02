@@ -1,5 +1,5 @@
 import { m3, font } from "../theme";
-import { DoshMark } from "./ui";
+import { DoshMark, Ripple } from "./ui";
 import type { Tab } from "../types";
 
 // Material 3 (Android) Navigation Bar.
@@ -65,6 +65,8 @@ function NavItem({
       aria-current={active ? "page" : undefined}
       title={label}
       style={{
+        position: "relative",
+        overflow: "hidden",
         flex: 1,
         border: "none",
         background: "none",
@@ -79,6 +81,7 @@ function NavItem({
         color: active ? m3.onSecondaryContainer : m3.onSurfaceVariant,
       }}
     >
+      <Ripple color="rgba(20,28,51,0.14)" />
       <span
         aria-hidden
         style={{

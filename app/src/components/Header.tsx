@@ -1,6 +1,6 @@
 import { t, display } from "../theme";
 import { me } from "../data";
-import { Avatar } from "./ui";
+import { Avatar, Ripple } from "./ui";
 import type { Tab } from "../types";
 
 const titles: Record<Tab, string> = {
@@ -34,9 +34,21 @@ export function Header({ tab }: { tab: Tab }) {
       </div>
       <button
         title="Profile"
-        style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer" }}
+        aria-label="Profile"
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          border: "none",
+          background: "transparent",
+          padding: 3,
+          borderRadius: 999,
+          cursor: "pointer",
+          display: "grid",
+          placeItems: "center",
+        }}
       >
         <Avatar label={me.name} src={me.photo} size={34} />
+        <Ripple color="rgba(20,28,51,0.16)" />
       </button>
     </div>
   );

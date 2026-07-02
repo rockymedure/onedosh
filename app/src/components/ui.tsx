@@ -1,6 +1,62 @@
 import { useEffect, useRef, useState } from "react";
 import { t } from "../theme";
 
+// Material 3 touch ripple. Drop it inside any clickable element that is
+// `position: relative; overflow: hidden;` — it binds to its parent, so no
+// wiring of handlers is needed at the call site. Purely a state layer, it
+// changes interaction feel only (no layout/color of the host itself).
+export function Ripple({ color = "rgba(20,28,51,0.35)" }: { color?: string }) {
+  const holder = useRef<HTMLSpanElement>(null);
+  const [ripples, setRipples] = useState<{ x: number; y: number; size: number; key: number }[]>([]);
+
+  useEffect(() => {
+    const parent = holder.current?.parentElement;
+    if (!parent) return;
+    const onDown = (e: PointerEvent) => {
+      const rect = parent.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 2;
+      const key = performance.now();
+      setRipples((r) => [
+        ...r,
+        { x: e.clientX - rect.left - size / 2, y: e.clientY - rect.top - size / 2, size, key },
+      ]);
+      window.setTimeout(() => setRipples((r) => r.filter((rr) => rr.key !== key)), 560);
+    };
+    parent.addEventListener("pointerdown", onDown);
+    return () => parent.removeEventListener("pointerdown", onDown);
+  }, []);
+
+  return (
+    <span
+      ref={holder}
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        borderRadius: "inherit",
+        overflow: "hidden",
+        pointerEvents: "none",
+      }}
+    >
+      {ripples.map((r) => (
+        <span
+          key={r.key}
+          style={{
+            position: "absolute",
+            left: r.x,
+            top: r.y,
+            width: r.size,
+            height: r.size,
+            borderRadius: "50%",
+            background: color,
+            animation: "m3ripple 550ms cubic-bezier(0.2, 0, 0, 1) forwards",
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function DoshMark({ size = 34 }: { size?: number }) {
   return (
     <img
@@ -234,6 +290,8 @@ export function Chip({
     <button
       onClick={onClick}
       style={{
+        position: "relative",
+        overflow: "hidden",
         border: `1px solid ${dark ? t.navy : t.border}`,
         background: dark ? t.navy : "#fff",
         color: dark ? "#fff" : t.ink,
@@ -245,6 +303,7 @@ export function Chip({
       }}
     >
       {label}
+      <Ripple color={dark ? "rgba(255,255,255,0.3)" : "rgba(20,28,51,0.18)"} />
     </button>
   );
 }
