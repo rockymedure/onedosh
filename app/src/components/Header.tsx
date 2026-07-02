@@ -4,7 +4,8 @@ import { Avatar } from "./ui";
 import type { Tab } from "../types";
 
 const titles: Record<Tab, string> = {
-  activity: "Activity",
+  activity: "Explore",
+  work: "Work",
   dosh: "Dosh",
   money: "Money",
 };

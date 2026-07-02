@@ -13,7 +13,7 @@ export function MoneyTab({
   onOpenDosh: (prompt: string) => void;
 }) {
   return (
-    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
+    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
       <BalanceStack justVerified={justVerified} onOpenDosh={onOpenDosh} />
 
       <SectionLabel style={{ marginTop: 22 }}>Card</SectionLabel>

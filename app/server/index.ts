@@ -8,11 +8,13 @@ import { runDosh, hasKey, type ChatMessage, type DoshContext } from "./dosh.ts";
 import {
   hasDb,
   getState,
+  getJobs,
   applyEffect,
   applyEffects,
   resetProfile,
   type AppState,
   type DoshEffect,
+  type Job,
   type Mode,
 } from "./db.ts";
 
@@ -37,7 +39,8 @@ function asMode(v: unknown): Mode {
 }
 
 // Build Dosh's grounding context from the persisted state.
-function contextFromState(s: AppState): DoshContext {
+function contextFromState(s: AppState, jobs: Job[]): DoshContext {
+  const bookedIds = new Set(s.bookings.map((b) => b.jobId));
   return {
     tag: s.tag,
     name: s.name,
@@ -53,6 +56,15 @@ function contextFromState(s: AppState): DoshContext {
     accountOpened: s.accountOpened,
     watching: s.watching,
     cardOnFile: s.cardLast4,
+    jobs: jobs.map((j) => ({
+      id: j.id,
+      title: j.title,
+      poster: `${j.posterName} (${j.posterHandle})`,
+      budget: `$${j.budgetUsd.toLocaleString()} ${j.cadence}`,
+      tags: j.tags,
+      inNetwork: j.inNetwork,
+      booked: bookedIds.has(j.id),
+    })),
   };
 }
 
@@ -89,6 +101,20 @@ function fallbackContext(mode: Mode): { ctx: DoshContext; state: null } {
         };
   return { ctx, state: null };
 }
+
+app.get("/api/jobs", async (_req, res) => {
+  if (!hasDb()) {
+    res.json({ jobs: [], db: false });
+    return;
+  }
+  try {
+    const jobs = await getJobs();
+    res.json({ jobs, db: true });
+  } catch (err: any) {
+    console.error("Jobs error:", err?.message || err);
+    res.status(500).json({ error: err?.message || "jobs_failed" });
+  }
+});
 
 app.get("/api/state", async (req, res) => {
   const mode = asMode(req.query.mode);
@@ -157,8 +183,9 @@ app.post("/api/dosh", async (req, res) => {
     let state: AppState | null = null;
     let ctx: DoshContext;
     if (hasDb()) {
-      state = await getState(mode);
-      ctx = contextFromState(state);
+      const [s, jobs] = await Promise.all([getState(mode), getJobs()]);
+      state = s;
+      ctx = contextFromState(s, jobs);
     } else {
       ctx = fallbackContext(mode).ctx;
     }

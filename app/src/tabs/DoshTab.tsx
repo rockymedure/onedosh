@@ -78,7 +78,7 @@ export function DoshTab({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 84 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 8 }}>
       <div ref={scroller} style={{ flex: 1, overflowY: "auto", padding: "4px 2px 8px" }}>
         {feed.map((item, i) => (
           <div key={i} className="dosh-enter" style={{ marginBottom: 16 }}>

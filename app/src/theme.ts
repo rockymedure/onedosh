@@ -26,6 +26,31 @@ export const t = {
   gutter: 16,
 } as const;
 
+// Material 3 (Android) color roles, mapped onto the OneDosh brand rather than
+// the default purple "Material You" palette. Used by the Android chrome
+// (navigation bar, status bar) so the system reflects the target platform.
+export const m3 = {
+  // Surfaces — subtle tonal elevation over the warm paper background.
+  surface: "#F1EFE7",
+  surfaceContainer: "#EDEAE0", // nav bar rests here (one step up from surface)
+  surfaceContainerHigh: "#E7E4DA",
+  onSurface: "#12141C", // active label / high-emphasis text
+  onSurfaceVariant: "#5C6270", // inactive icon + label
+
+  // Secondary container = the pill behind the active nav item.
+  secondaryContainer: "#E6EFBE", // soft lime tint
+  onSecondaryContainer: "#141C33", // active icon on the pill
+
+  outline: "#79747E",
+  outlineVariant: "#CFCCC2",
+  scrim: "rgba(18,20,28,0.32)",
+
+  // Nav bar geometry (dp ~= px here).
+  navHeight: 80,
+  navIndicatorW: 64,
+  navIndicatorH: 32,
+} as const;
+
 export const font =
   '"Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 

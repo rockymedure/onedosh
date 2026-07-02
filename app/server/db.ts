@@ -23,6 +23,34 @@ export type Mode = "new" | "returning";
 export type Contact = { tag: string; name?: string; relationship?: string; note?: string };
 export type Txn = { kind: string; usdDelta: number; ngnDelta: number; note?: string; createdAt: string };
 
+export type Job = {
+  id: string;
+  emoji: string;
+  title: string;
+  posterName: string;
+  posterHandle: string;
+  blurb: string;
+  category: string;
+  budgetUsd: number;
+  cadence: string;
+  location: string;
+  tags: string[];
+  inNetwork: boolean;
+};
+
+export type Booking = {
+  id: string;
+  jobId: string;
+  title: string;
+  posterName: string;
+  posterHandle: string;
+  emoji: string;
+  agreedUsd: number;
+  cadence: string;
+  status: string;
+  createdAt: string;
+};
+
 export type AppState = {
   mode: Mode;
   tag: string;
@@ -36,6 +64,7 @@ export type AppState = {
   cardLast4: string | null;
   contacts: Contact[];
   transactions: Txn[];
+  bookings: Booking[];
 };
 
 // A single effect Dosh can apply to the world. Non-money effects run as soon as
@@ -44,6 +73,7 @@ export type DoshEffect = {
   openAccount?: boolean;
   attachCard?: { last4?: string };
   addContact?: { tag?: string; name?: string; relationship?: string; note?: string };
+  bookJob?: { jobId?: string };
   usdDelta?: number;
   ngnDelta?: number;
   watch?: string | null;
@@ -88,7 +118,30 @@ type ProfileRow = {
   card_last4: string | null;
 };
 
-function toState(mode: Mode, p: ProfileRow, contacts: any[], txns: any[]): AppState {
+function toJob(r: any): Job {
+  return {
+    id: r.id,
+    emoji: r.emoji || "💼",
+    title: r.title,
+    posterName: r.poster_name,
+    posterHandle: r.poster_handle,
+    blurb: r.blurb || "",
+    category: r.category || "",
+    budgetUsd: Number(r.budget_usd),
+    cadence: r.cadence || "",
+    location: r.location || "Remote",
+    tags: Array.isArray(r.tags) ? r.tags : [],
+    inNetwork: Boolean(r.in_network),
+  };
+}
+
+export async function getJobs(): Promise<Job[]> {
+  if (!db) return [];
+  const { data } = await db.from("onedosh_jobs").select("*").order("sort", { ascending: true });
+  return (data || []).map(toJob);
+}
+
+function toState(mode: Mode, p: ProfileRow, contacts: any[], txns: any[], bookings: any[]): AppState {
   return {
     mode,
     tag: p.tag,
@@ -108,18 +161,35 @@ function toState(mode: Mode, p: ProfileRow, contacts: any[], txns: any[]): AppSt
       note: t.note,
       createdAt: t.created_at,
     })),
+    bookings: bookings.map((b) => ({
+      id: b.id,
+      jobId: b.job_id,
+      title: b.onedosh_jobs?.title ?? "",
+      posterName: b.onedosh_jobs?.poster_name ?? "",
+      posterHandle: b.onedosh_jobs?.poster_handle ?? "",
+      emoji: b.onedosh_jobs?.emoji ?? "💼",
+      cadence: b.onedosh_jobs?.cadence ?? "",
+      agreedUsd: Number(b.agreed_usd),
+      status: b.status,
+      createdAt: b.created_at,
+    })),
   };
 }
 
 export async function getState(mode: Mode): Promise<AppState> {
   if (!db) throw new Error("no_db");
   await ensureProfile(mode);
-  const [profile, contacts, txns] = await Promise.all([
+  const [profile, contacts, txns, bookings] = await Promise.all([
     db.from("onedosh_profiles").select("*").eq("mode", mode).single(),
     db.from("onedosh_contacts").select("*").eq("mode", mode).order("created_at", { ascending: true }),
     db.from("onedosh_transactions").select("*").eq("mode", mode).order("created_at", { ascending: false }).limit(12),
+    db
+      .from("onedosh_bookings")
+      .select("*, onedosh_jobs(title, poster_name, poster_handle, emoji, cadence)")
+      .eq("mode", mode)
+      .order("created_at", { ascending: false }),
   ]);
-  return toState(mode, profile.data as ProfileRow, contacts.data || [], txns.data || []);
+  return toState(mode, profile.data as ProfileRow, contacts.data || [], txns.data || [], bookings.data || []);
 }
 
 export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> {
@@ -128,16 +198,55 @@ export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> 
   const { data: p } = await db.from("onedosh_profiles").select("*").eq("mode", mode).single();
   if (!p) throw new Error("no_profile");
 
+  // Booking a gig is a bundle: it commits to the work, saves the client as a
+  // contact, opens the USD account so they can be paid, and starts a watch for
+  // the agreed payment. It resolves to those primitive effects.
+  let job: Job | null = null;
+  if (e.bookJob?.jobId && db) {
+    const { data: jr } = await db.from("onedosh_jobs").select("*").eq("id", e.bookJob.jobId).maybeSingle();
+    if (jr) {
+      job = toJob(jr);
+      const { data: existingBooking } = await db
+        .from("onedosh_bookings")
+        .select("id")
+        .eq("mode", mode)
+        .eq("job_id", job.id)
+        .maybeSingle();
+      if (!existingBooking) {
+        await db.from("onedosh_bookings").insert({ mode, job_id: job.id, agreed_usd: job.budgetUsd, status: "booked" });
+      }
+      // Save the client (if not already saved).
+      const { data: existingContact } = await db
+        .from("onedosh_contacts")
+        .select("id")
+        .eq("mode", mode)
+        .ilike("tag", job.posterHandle)
+        .maybeSingle();
+      if (!existingContact) {
+        await db.from("onedosh_contacts").insert({
+          mode,
+          tag: job.posterHandle,
+          name: job.posterName,
+          relationship: `client — ${job.title} ($${job.budgetUsd} ${job.cadence})`,
+        });
+      }
+    }
+  }
+
   const update: Record<string, unknown> = {};
   if (e.openAccount && !p.account_opened) update.account_opened = true;
   if (e.attachCard && !p.card_last4) {
     update.card_last4 = e.attachCard.last4 || String(Math.floor(1000 + Math.random() * 9000));
   }
+  if (job) {
+    if (!p.account_opened) update.account_opened = true;
+    update.watching = `${job.posterName}'s payment for ${job.title}`;
+  }
   if (typeof e.usdDelta === "number" && e.usdDelta !== 0) update.usd = Math.max(0, Number(p.usd) + e.usdDelta);
   if (typeof e.ngnDelta === "number" && e.ngnDelta !== 0) update.ngn = Math.max(0, Number(p.ngn) + e.ngnDelta);
   if (e.watch !== undefined) update.watching = e.watch;
   // First real action means they're no longer a blank just-verified user.
-  if (p.just_verified && (update.account_opened || update.card_last4 || e.addContact || update.usd !== undefined || update.ngn !== undefined)) {
+  if (p.just_verified && (update.account_opened || update.card_last4 || e.addContact || job || update.usd !== undefined || update.ngn !== undefined)) {
     update.just_verified = false;
   }
   if (Object.keys(update).length) {
@@ -180,6 +289,7 @@ export async function applyEffects(mode: Mode, effects: DoshEffect[]): Promise<A
 
 export async function resetProfile(mode: Mode): Promise<AppState> {
   if (!db) throw new Error("no_db");
+  await db.from("onedosh_bookings").delete().eq("mode", mode);
   await db.from("onedosh_transactions").delete().eq("mode", mode);
   await db.from("onedosh_contacts").delete().eq("mode", mode);
   await db.from("onedosh_profiles").delete().eq("mode", mode);

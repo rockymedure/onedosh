@@ -16,7 +16,7 @@ export function ActivityTab({
 
   if (justVerified) {
     return (
-      <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
+      <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
         <TagHero />
         <EmptyNetwork onOpenDosh={onOpenDosh} />
       </div>
@@ -24,7 +24,7 @@ export function ActivityTab({
   }
 
   return (
-    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 92 }}>
+    <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
       <TagHero />
 
       <SectionLabel>Active now — tap to pay</SectionLabel>

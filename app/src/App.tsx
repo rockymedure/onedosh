@@ -4,6 +4,7 @@ import { StatusBar } from "./components/StatusBar";
 import { Header } from "./components/Header";
 import { TabBar } from "./components/TabBar";
 import { ActivityTab } from "./tabs/ActivityTab";
+import { WorkTab } from "./tabs/WorkTab";
 import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
 import { health, resetProfile } from "./dosh/api";
@@ -15,6 +16,22 @@ const NEW_OPENER =
   "You're in 🎉 IDV done, account's live. I'm Dosh — your money guy. First move: let's put some money in your wallet from your own card so it's ready to go. Or if someone's about to pay you, we can set that up instead.";
 const NEW_STARTERS = ["Add money", "💸 Get paid", "Just exploring"];
 
+// True on phone-sized screens, where we drop the desktop presentation (device
+// bezel + marketing panel) and let the app fill the whole viewport.
+function useIsHandset() {
+  const query = "(max-width: 820px)";
+  const [isHandset, setIsHandset] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setIsHandset(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return isHandset;
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("dosh");
   const [seed, setSeed] = useState<{ text: string; n: number } | undefined>();
@@ -22,6 +39,7 @@ export default function App() {
   const [mode, setMode] = useState<Mode>("new");
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
+  const isHandset = useIsHandset();
 
   useEffect(() => {
     health().then((h) => setStatus({ key: h.key, model: h.model, db: h.db }));
@@ -43,6 +61,42 @@ export default function App() {
     ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
     : { mode };
 
+  const shell = (
+    <>
+      {!isHandset && <StatusBar />}
+      <Header tab={tab} />
+      <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
+        {tab === "activity" && <ActivityTab justVerified={isNew} onOpenDosh={openDosh} />}
+        {tab === "work" && <WorkTab key={`work-${mode}-${reloadKey}`} mode={mode} onOpenDosh={openDosh} />}
+        {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
+        {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
+      </div>
+      <TabBar tab={tab} onSelect={setTab} />
+    </>
+  );
+
+  // On a real phone, the app is the whole screen — no device bezel, no
+  // marketing panel. That's the thing you actually use.
+  if (isHandset) {
+    return (
+      <div
+        style={{
+        position: "fixed",
+        inset: 0,
+        height: "100dvh",
+        background: t.bg,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        paddingTop: "env(safe-area-inset-top)",
+      }}
+      >
+        {shell}
+      </div>
+    );
+  }
+
+  // On desktop, keep the framed presentation alongside the explainer.
   return (
     <div
       style={{
@@ -55,19 +109,7 @@ export default function App() {
         flexWrap: "wrap",
       }}
     >
-      <Phone>
-        <StatusBar />
-        <Header tab={tab} />
-        <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
-          {tab === "activity" && <ActivityTab justVerified={isNew} onOpenDosh={openDosh} />}
-          {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
-          {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
-        </div>
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 50 }}>
-          <TabBar tab={tab} onSelect={setTab} />
-        </div>
-      </Phone>
-
+      <Phone>{shell}</Phone>
       <Legend status={status} mode={mode} onMode={setMode} onReset={reset} />
     </div>
   );
@@ -80,7 +122,7 @@ function Phone({ children }: { children: React.ReactNode }) {
         width: 380,
         height: 780,
         background: t.bg,
-        borderRadius: 42,
+        borderRadius: 32,
         border: "10px solid #0C1220",
         overflow: "hidden",
         position: "relative",

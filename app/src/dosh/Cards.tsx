@@ -132,6 +132,7 @@ function CardView({
       join: "Join",
       fund: "Confirm top-up",
       add_card: "Link card",
+      book: "Book it",
     };
     const doneTitle: Record<string, string> = {
       send: "Sent ✓",
@@ -142,6 +143,7 @@ function CardView({
       join: "You're in ✓",
       fund: "Topped up ✓",
       add_card: "Card linked ✓",
+      book: "Booked 🤝",
     };
     const doneSub: Record<string, string> = {
       stake: "Good luck — I'll watch the result.",
@@ -149,6 +151,7 @@ function CardView({
       join: "You're on the board.",
       fund: "Money's in your wallet.",
       add_card: "You can fund your wallet now.",
+      book: "Client saved — I'll watch for the payment.",
     };
     if (done) {
       return (
@@ -203,6 +206,64 @@ function CardView({
           <Ghost label="Not now" onClick={() => onAction("Not now")} />
         </div>
       </Shell>
+    );
+  }
+
+  if (card.type === "job_board") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {card.intro && (
+          <div style={{ fontSize: 13, fontWeight: 700, color: t.sub, padding: "0 2px" }}>{card.intro}</div>
+        )}
+        {(card.jobs || []).map((j) => (
+          <div
+            key={j.id}
+            className="dosh-enter"
+            style={{
+              ...glass,
+              border: j.inNetwork ? `1px solid ${t.lime}` : glassBorder,
+              borderRadius: t.radiusInner,
+              padding: 14,
+              boxShadow: j.inNetwork ? limeGlow : glass.boxShadow,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <div style={{ fontSize: 22, lineHeight: 1 }}>{j.emoji || "💼"}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 800, fontSize: 14, color: t.ink }}>{j.title}</span>
+                  {j.inNetwork && (
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: 800,
+                        letterSpacing: 0.3,
+                        textTransform: "uppercase",
+                        color: t.limeInk,
+                        background: "rgba(207,242,63,0.5)",
+                        borderRadius: 6,
+                        padding: "2px 6px",
+                      }}
+                    >
+                      In your circle
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 12.5, color: t.sub, marginTop: 2 }}>
+                  {j.poster}
+                  {j.handle ? ` · ${j.handle}` : ""}
+                </div>
+                {j.budget && (
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: t.green, marginTop: 4 }}>{j.budget}</div>
+                )}
+              </div>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <Primary label="Book this gig" onClick={() => onAction(`Book the "${j.title}" gig from ${j.poster || j.handle || "them"}`)} />
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 

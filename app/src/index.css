@@ -102,4 +102,9 @@ input {
   100% { opacity: 0; transform: translateY(60px) rotate(220deg); }
 }
 
-::-webkit-scrollbar { width: 0; height: 0; }
+/* Hide scrollbars everywhere while keeping scroll behaviour intact. */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / old Edge */
+}
+*::-webkit-scrollbar { width: 0; height: 0; display: none; } /* WebKit */

@@ -1,4 +1,4 @@
-import type { AppState, ChatMessage, DoshEffect, DoshResponse } from "../types";
+import type { AppState, ChatMessage, DoshEffect, DoshResponse, Job } from "../types";
 
 export type Mode = "new" | "returning";
 
@@ -51,6 +51,16 @@ export async function applyEffect(mode: Mode, effect: DoshEffect): Promise<AppSt
     return data.state;
   } catch {
     return null;
+  }
+}
+
+export async function getJobs(): Promise<Job[]> {
+  try {
+    const res = await fetch("/api/jobs");
+    const data = (await res.json()) as { jobs: Job[] };
+    return data.jobs || [];
+  } catch {
+    return [];
   }
 }
 
