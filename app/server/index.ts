@@ -79,7 +79,7 @@ function fallbackContext(mode: Mode): { ctx: DoshContext; state: null } {
           ngnBalance: 0,
           nairaPerUsd: 1418,
           people: [
-            { tag: "@mike_edits", relationship: "US client, pays for video editing" },
+            { tag: "@mike_edits", relationship: "US-based, pays for video editing" },
             { tag: "Mum", relationship: "family in Enugu" },
           ],
           justVerified: false,

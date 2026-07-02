@@ -89,7 +89,7 @@ const SEED: Record<Mode, Record<string, unknown>> = {
 const SEED_CONTACTS: Record<Mode, Contact[]> = {
   new: [],
   returning: [
-    { tag: "@mike_edits", name: "Mike", relationship: "US client, pays for video editing" },
+    { tag: "@mike_edits", name: "Mike", relationship: "US-based, pays for video editing" },
     { tag: "Mum", name: "Mum", relationship: "family in Enugu, monthly support + school fees" },
     { tag: "YouTube AdSense", name: "YouTube AdSense", relationship: "platform payout, roughly quarterly" },
   ],
@@ -198,7 +198,7 @@ export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> 
   const { data: p } = await db.from("onedosh_profiles").select("*").eq("mode", mode).single();
   if (!p) throw new Error("no_profile");
 
-  // Booking a gig is a bundle: it commits to the work, saves the client as a
+  // Booking a gig is a bundle: it commits to the work, saves the payer as a
   // contact, opens the USD account so they can be paid, and starts a watch for
   // the agreed payment. It resolves to those primitive effects.
   let job: Job | null = null;
@@ -215,7 +215,7 @@ export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> 
       if (!existingBooking) {
         await db.from("onedosh_bookings").insert({ mode, job_id: job.id, agreed_usd: job.budgetUsd, status: "booked" });
       }
-      // Save the client (if not already saved).
+      // Save the payer (if not already saved).
       const { data: existingContact } = await db
         .from("onedosh_contacts")
         .select("id")
@@ -227,7 +227,7 @@ export async function applyEffect(mode: Mode, e: DoshEffect): Promise<AppState> 
           mode,
           tag: job.posterHandle,
           name: job.posterName,
-          relationship: `client — ${job.title} ($${job.budgetUsd} ${job.cadence})`,
+          relationship: `pays for ${job.title} ($${job.budgetUsd} ${job.cadence})`,
         });
       }
     }

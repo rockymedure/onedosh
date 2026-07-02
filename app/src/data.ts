@@ -37,7 +37,7 @@ export const context: DoshContext = {
   ngnBalance: 0,
   nairaPerUsd: 1418,
   people: [
-    { tag: "@mike_edits", relationship: "US client, pays for video editing" },
+    { tag: "@mike_edits", relationship: "US-based, pays for video editing" },
     { tag: "Mum", relationship: "family in Enugu, monthly support + school fees" },
     { tag: "YouTube AdSense", relationship: "platform payout, roughly quarterly" },
   ],

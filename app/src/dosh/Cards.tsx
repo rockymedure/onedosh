@@ -152,7 +152,7 @@ function CardView({
       join: "You're on the board.",
       fund: "Money's in your wallet.",
       add_card: "You can fund your wallet now.",
-      book: "Client saved — I'll watch for the payment.",
+      book: "Saved them — I'll watch for the payment.",
     };
     if (done) {
       return (
@@ -295,7 +295,7 @@ function GigListing({
   onAction: (text: string) => void;
 }) {
   const title = full?.title || item.title;
-  const posterName = full?.posterName || item.poster || "Client";
+  const posterName = full?.posterName || item.poster || "Payer";
   const handle = full?.posterHandle || item.handle || "";
   const location = full?.location || "";
   const blurb = full?.blurb || "";

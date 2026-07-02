@@ -344,8 +344,8 @@ function Legend({
       </div>
       <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "#667085", marginTop: 14 }}>
         {mode === "new"
-          ? 'Try: "Get paid", then "A client abroad" — watch Dosh set up your US account and save your first contact.'
-          : 'Try: "get me paid by a US client", "send ₦40k to Mum", "someone overpaid and wants a refund".'}
+          ? 'Try: "Get paid", then "Someone abroad" — watch Dosh set up your US account and save your first contact.'
+          : 'Try: "get me paid by someone abroad", "send ₦40k to Mum", "someone overpaid and wants a refund".'}
       </p>
     </div>
   );
