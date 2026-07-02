@@ -125,7 +125,7 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
           color: "#fff",
           borderRadius: t.radiusCard,
           padding: 14,
-          marginBottom: 14,
+          marginBottom: 12,
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -184,9 +184,10 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
 
 /* ---------------------------------------------------------------- New gigs */
 
-// A swipeable rail of the freshest gigs, sitting on the Explore home. Tap any
-// card to drop straight into its detail page; the trailing card jumps to the
-// full Work board. Booked gigs are flagged so the detail opens in the right state.
+// A swipeable rail of the freshest gigs. It's a sub-section of the Work block
+// above (same "Work 💼" header, hugging the hero) so the two read as one thing:
+// tap the hero to browse everything, or swipe a card to jump straight into its
+// detail. Booked gigs are flagged so the detail opens in the right state.
 function NewGigs({
   mode,
   onOpenWork,
@@ -221,9 +222,18 @@ function NewGigs({
   if (featured.length === 0) return null;
 
   return (
-    <div style={{ marginBottom: 6 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 2px" }}>
-        <SectionLabel>New gigs ✨</SectionLabel>
+    <div style={{ marginBottom: 14 }}>
+      {/* A lightweight sub-header, deliberately smaller than a SectionLabel, so
+          the rail nests under the Work hero instead of reading as a new feature. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          margin: "0 2px 8px",
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 800, color: t.ink }}>Fresh gigs</span>
         <button
           onClick={onOpenWork}
           style={{
@@ -233,7 +243,7 @@ function NewGigs({
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
-            padding: "0 0 8px",
+            padding: 0,
           }}
         >
           See all ›
@@ -243,11 +253,11 @@ function NewGigs({
       <div
         style={{
           display: "flex",
-          gap: 12,
+          alignItems: "stretch",
+          gap: 10,
           overflowX: "auto",
-          padding: "2px 2px 10px",
+          padding: "2px 2px 6px",
           scrollSnapType: "x mandatory",
-          marginBottom: 8,
         }}
       >
         {featured.map((job) => (
@@ -271,7 +281,7 @@ function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpe
       onClick={onOpen}
       style={{
         flexShrink: 0,
-        width: 190,
+        width: 172,
         scrollSnapAlign: "start",
         textAlign: "left",
         border: job.inNetwork ? `1px solid ${t.lime}` : `1px solid ${t.border}`,
@@ -281,21 +291,20 @@ function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpe
         overflow: "hidden",
         cursor: "pointer",
         boxShadow: job.inNetwork ? limeGlow : "0 1px 4px rgba(20,28,51,0.06)",
-        display: "flex",
-        flexDirection: "column",
+        display: "block",
       }}
     >
       <div
         style={{
           position: "relative",
-          height: 96,
+          height: 100,
           background: t.navy,
           display: "grid",
           placeItems: "center",
         }}
       >
         {src ? (
-          <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         ) : (
           <span style={{ color: t.lime, fontWeight: 800, fontSize: 34 }}>{job.title.slice(0, 1)}</span>
         )}
@@ -337,13 +346,16 @@ function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpe
         )}
       </div>
 
-      <div style={{ padding: "10px 11px 12px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+      <div style={{ padding: "13px 11px 12px" }}>
+        {/* Fixed two-line title area keeps every card aligned and clamps long
+            titles cleanly from the top (no stray last-word fragments). */}
         <div
           style={{
+            height: 34,
             fontSize: 13.5,
             fontWeight: 800,
             color: t.ink,
-            lineHeight: 1.25,
+            lineHeight: "17px",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
@@ -354,6 +366,7 @@ function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpe
         </div>
         <div
           style={{
+            marginTop: 4,
             fontSize: 11.5,
             color: t.sub,
             whiteSpace: "nowrap",
@@ -363,7 +376,7 @@ function GigMiniCard({ job, booked, onOpen }: { job: Job; booked: boolean; onOpe
         >
           {job.posterName}
         </div>
-        <div style={{ marginTop: "auto", paddingTop: 6, display: "flex", alignItems: "baseline", gap: 4 }}>
+        <div style={{ marginTop: 8, display: "flex", alignItems: "baseline", gap: 4 }}>
           <span style={{ fontSize: 15, fontWeight: 800, color: t.green }}>${job.budgetUsd.toLocaleString()}</span>
           <span style={{ fontSize: 11, fontWeight: 600, color: t.faint }}>{job.cadence}</span>
         </div>
@@ -378,7 +391,7 @@ function SeeAllCard({ onOpenWork, count }: { onOpenWork: () => void; count: numb
       onClick={onOpenWork}
       style={{
         flexShrink: 0,
-        width: 132,
+        width: 120,
         scrollSnapAlign: "start",
         border: `1.5px dashed ${t.faint}`,
         background: "transparent",

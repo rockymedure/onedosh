@@ -2,33 +2,89 @@ import { t, display } from "../theme";
 import { Avatar } from "../components/ui";
 import { me } from "../data";
 
-type Row = { icon: string; label: string; sub?: string; prompt?: string };
+type IconName = "tag" | "card" | "globe" | "bell" | "lock" | "shield" | "chat" | "doc";
+type Row = { icon: IconName; label: string; sub?: string; prompt?: string };
 
 const GROUPS: { title: string; rows: Row[] }[] = [
   {
     title: "Account",
     rows: [
-      { icon: "🏷️", label: "Your Dosh tag", sub: me.tag },
-      { icon: "💳", label: "Cards & banks", sub: "Manage linked cards" },
-      { icon: "🌍", label: "US receiving account", sub: "Get paid from abroad" },
+      { icon: "tag", label: "Your Dosh tag", sub: me.tag },
+      { icon: "card", label: "Cards & banks", sub: "Manage linked cards" },
+      { icon: "globe", label: "US receiving account", sub: "Get paid from abroad" },
     ],
   },
   {
     title: "Preferences",
     rows: [
-      { icon: "🔔", label: "Notifications" },
-      { icon: "🔒", label: "Security & PIN" },
-      { icon: "🎯", label: "Limits & verification" },
+      { icon: "bell", label: "Notifications" },
+      { icon: "lock", label: "Security & PIN" },
+      { icon: "shield", label: "Limits & verification" },
     ],
   },
   {
     title: "Support",
     rows: [
-      { icon: "💬", label: "Ask Dosh for help", prompt: "I need help with my account" },
-      { icon: "📄", label: "Terms & privacy" },
+      { icon: "chat", label: "Ask Dosh for help", prompt: "I need help with my account" },
+      { icon: "doc", label: "Terms & privacy" },
     ],
   },
 ];
+
+// Stroke icons matching the tab-bar / header style (24-grid, currentColor).
+function RowIcon({ name }: { name: IconName }) {
+  const p = { stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
+  const paths: Record<IconName, React.ReactNode> = {
+    tag: (
+      <>
+        <path d="M4 12.5V5.5A1.5 1.5 0 015.5 4h7l7.5 7.5a1.6 1.6 0 010 2.3l-5.2 5.2a1.6 1.6 0 01-2.3 0L4 12.5z" {...p} />
+        <circle cx={8.5} cy={8.5} r={1.3} {...p} />
+      </>
+    ),
+    card: (
+      <>
+        <rect x={3} y={5.5} width={18} height={13} rx={2.6} {...p} />
+        <path d="M3 9.5h18" {...p} />
+      </>
+    ),
+    globe: (
+      <>
+        <circle cx={12} cy={12} r={8.2} {...p} />
+        <path d="M3.8 12h16.4M12 3.8c2.4 2.2 2.4 14 0 16.4-2.4-2.4-2.4-14 0-16.4z" {...p} />
+      </>
+    ),
+    bell: (
+      <>
+        <path d="M6.5 10a5.5 5.5 0 0111 0c0 4 1.5 5.5 1.5 5.5H5s1.5-1.5 1.5-5.5z" {...p} />
+        <path d="M10.2 19a2 2 0 003.6 0" {...p} />
+      </>
+    ),
+    lock: (
+      <>
+        <rect x={4.5} y={10.5} width={15} height={9} rx={2.2} {...p} />
+        <path d="M8 10.5V8a4 4 0 018 0v2.5" {...p} />
+      </>
+    ),
+    shield: (
+      <>
+        <path d="M12 3.5l6.5 2.4v5c0 4.6-3 7.9-6.5 9.1-3.5-1.2-6.5-4.5-6.5-9.1v-5L12 3.5z" {...p} />
+        <path d="M9.3 12l1.9 1.9L15 9.9" {...p} />
+      </>
+    ),
+    chat: <path d="M20 12a7.5 7.5 0 01-10.8 6.7L4.5 20l1.3-4.4A7.5 7.5 0 1120 12z" {...p} />,
+    doc: (
+      <>
+        <path d="M6.5 3.5h7l4 4v13a1 1 0 01-1 1H6.5a1 1 0 01-1-1v-16a1 1 0 011-1z" {...p} />
+        <path d="M13 3.5v4.5h4.5M8.5 13h7M8.5 16.5h5" {...p} />
+      </>
+    ),
+  };
+  return (
+    <svg width={20} height={20} viewBox="0 0 24 24" aria-hidden style={{ display: "block" }}>
+      {paths[name]}
+    </svg>
+  );
+}
 
 type Mode = "new" | "returning";
 
@@ -156,8 +212,8 @@ export function ProfileTab({
                   cursor: "pointer",
                 }}
               >
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: t.bg, display: "grid", placeItems: "center", fontSize: 17, flexShrink: 0 }}>
-                  {r.icon}
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: t.bg, display: "grid", placeItems: "center", color: t.navy, flexShrink: 0 }}>
+                  <RowIcon name={r.icon} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: t.ink }}>{r.label}</div>

@@ -9,6 +9,8 @@ import { GigDetail } from "./tabs/GigDetail";
 import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
 import { ProfileTab } from "./tabs/ProfileTab";
+import { VerifiedScreen } from "./components/VerifiedScreen";
+import { newUser } from "./data";
 import { health, resetProfile } from "./dosh/api";
 import type { Tab, Job } from "./types";
 
@@ -48,6 +50,9 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
+  // The just-verified persona arrives at the END of IDV — we replay that
+  // completion moment before dropping them into Dosh. Returning users skip it.
+  const [showVerified, setShowVerified] = useState(true);
   const isHandset = useIsHandset();
 
   useEffect(() => {
@@ -74,6 +79,7 @@ export default function App() {
     setShowWork(false);
     setGig(null);
     setShowProfile(false);
+    setShowVerified(mode === "new");
     setTab("dosh");
   }
 
@@ -82,6 +88,7 @@ export default function App() {
     setShowWork(false);
     setGig(null);
     setShowProfile(false);
+    setShowVerified(m === "new");
     setTab("dosh");
   }
 
@@ -92,9 +99,18 @@ export default function App() {
     setReloadKey((k) => k + 1);
     setShowWork(false);
     setGig(null);
+    setShowVerified(m === "new");
+  }
+
+  // Hand-off from the IDV completion screen into the cold-start Dosh feed.
+  function enterApp() {
+    setShowVerified(false);
+    setShowProfile(false);
+    setTab("dosh");
   }
 
   const isNew = mode === "new";
+  const gateVerified = isNew && showVerified;
   const doshProps = isNew
     ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
     : { mode };
@@ -112,6 +128,10 @@ export default function App() {
   const shell = (
     <>
       {!isHandset && <StatusBar />}
+      {gateVerified ? (
+        <VerifiedScreen name={newUser.name} onEnter={enterApp} />
+      ) : (
+      <>
       <Header
         tab={tab}
         onBack={back}
@@ -119,6 +139,10 @@ export default function App() {
         onProfile={back ? undefined : () => setShowProfile(true)}
       />
       <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
+        <div
+          key={showProfile ? "profile" : gig ? "gig" : onWorkBoard ? "work" : tab}
+          className="tab-switch"
+        >
         {showProfile ? (
           <ProfileTab onOpenDosh={openDosh} mode={mode} onMode={pickMode} />
         ) : (
@@ -146,8 +170,11 @@ export default function App() {
             {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
           </>
         )}
+        </div>
       </div>
       <TabBar tab={tab} onSelect={selectTab} />
+      </>
+      )}
     </>
   );
 
