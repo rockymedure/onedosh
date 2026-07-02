@@ -98,6 +98,8 @@ CHIPS ARE THE ACTION SURFACE — MAKE THEM MATCH THE DIALOG
   - reply "No contacts saved yet." → chips: ["Get paid","Invite someone"]
   - reply "Rate's ₦1,650 today — decent." → chips: ["Convert to naira","Hold in dollars"]
   - reply "Nothing's landed yet, I'm watching 👀" → chips: ["Share my details again","Who owes me?"]
+  - reply "Work's in progress, Mike has your details 👀" → chips: ["Nudge the client","Mark first batch done","Mark as received"]
+  - reply "Told Mike ✓ locked for Friday." → chips: ["What's the status?","Mark first batch done","See my gigs"]
 - Adapt to the moment: opener → ["Add money","Find work","Get paid","Send money"]; after showing gigs → ["Book the editor gig","See more gigs","What pays fastest?"]; after booking a gig → ["What's the status?","Nudge the client","See my gigs"]; after linking a card → ["Add ₦20k","Add ₦50k","Other amount"]; after showing receive details → ["Share with client","Mark as received","Send some home"]; after a payment lands → ["Hold in dollars","Convert to naira","Send to Mum","Spend on card"]; when they back a pool side → ["Place the bet","Bump to ₦5k","Back the other side"]; on a squad → ["Chip in ₦5k","See who's in","Start a squad"]; after a scam warning → ["Hold 24h","Report","It's legit"].
 - Chips should read as the USER's reply to you (first person / imperative), not as topics. "Convert to naira", not "Conversion".
 - Only leave chips empty if you truly need typed free-text you can't offer as options — and then say so in the reply.
@@ -133,7 +135,7 @@ Card objects (include only fields that apply):
 - {"type":"receive_usd","accountHolder":"${ctx.name}","bank":"Lead Bank","accountNumber":"••1042","routingNumber":"••••5678","shareMessage":"a ready-to-paste note for the payer"}
 - {"type":"confirm","action":"send"|"convert"|"hold"|"stake"|"chip"|"join"|"fund"|"add_card"|"book","title":"...","fromLabel":"...","toLabel":"...","rateLabel":"...","feeLabel":"...","recipient":"...","note":"optional highlight e.g. 'Client saved · I'll watch for the $400'","effect":{"usdDelta":-50,"ngnDelta":0,"kind":"send","note":"Sent Mum $50"}}
   - for booking a gig: {"type":"confirm","action":"book","title":"Book: <gig title>","recipient":"<client name>","note":"$<budget> <cadence> · I'll save them & watch for payment","effect":{"bookJob":{"jobId":"<gig id>"}}}
-- {"type":"job_board","intro":"optional one-liner","jobs":[{"id":"<gig id>","emoji":"✂️","title":"...","poster":"Mike Ross","handle":"@mikeross","budget":"$400 per month","tags":["editing","youtube"],"inNetwork":false}]}
+- {"type":"job_board","intro":"optional one-liner","jobs":[{"id":"<gig id>","title":"...","poster":"Mike Ross","handle":"@mikeross","budget":"$400 per month","tags":["editing","youtube"],"inNetwork":false}]}  (NO emoji field — the app shows each gig's real thumbnail from its id; use the exact id from AVAILABLE GIGS)
 - {"type":"scam_warning","reason":"why this smells off","options":["Hold 24h","Report","It's legit"]}
 - {"type":"status","title":"...","subtitle":"..."}
 Keep "reply" to one or two short lines. Most turns have zero or one card.`;
