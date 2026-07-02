@@ -10,6 +10,7 @@ import { DoshTab } from "./tabs/DoshTab";
 import { MoneyTab } from "./tabs/MoneyTab";
 import { ProfileTab } from "./tabs/ProfileTab";
 import { VerifiedScreen } from "./components/VerifiedScreen";
+import { IdvFlow } from "./idv/IdvFlow";
 import { newUser } from "./data";
 import { health, resetProfile } from "./dosh/api";
 import type { Tab, Job } from "./types";
@@ -50,8 +51,10 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
-  // The just-verified persona arrives at the END of IDV — we replay that
-  // completion moment before dropping them into Dosh. Returning users skip it.
+  // The just-verified persona plays the IDV flow, then its completion moment,
+  // before dropping into Dosh. Returning users skip both. idvActive gates the
+  // Sumsub steps; showVerified gates the OneDosh "you're verified" hand-off.
+  const [idvActive, setIdvActive] = useState(true);
   const [showVerified, setShowVerified] = useState(true);
   const isHandset = useIsHandset();
 
@@ -79,6 +82,7 @@ export default function App() {
     setShowWork(false);
     setGig(null);
     setShowProfile(false);
+    setIdvActive(mode === "new");
     setShowVerified(mode === "new");
     setTab("dosh");
   }
@@ -88,6 +92,7 @@ export default function App() {
     setShowWork(false);
     setGig(null);
     setShowProfile(false);
+    setIdvActive(m === "new");
     setShowVerified(m === "new");
     setTab("dosh");
   }
@@ -99,6 +104,7 @@ export default function App() {
     setReloadKey((k) => k + 1);
     setShowWork(false);
     setGig(null);
+    setIdvActive(m === "new");
     setShowVerified(m === "new");
   }
 
@@ -110,7 +116,8 @@ export default function App() {
   }
 
   const isNew = mode === "new";
-  const gateVerified = isNew && showVerified;
+  const gateIdv = isNew && idvActive;
+  const gateVerified = isNew && !idvActive && showVerified;
   const doshProps = isNew
     ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
     : { mode };
@@ -128,7 +135,9 @@ export default function App() {
   const shell = (
     <>
       {!isHandset && <StatusBar />}
-      {gateVerified ? (
+      {gateIdv ? (
+        <IdvFlow onComplete={() => setIdvActive(false)} />
+      ) : gateVerified ? (
         <VerifiedScreen name={newUser.name} onEnter={enterApp} />
       ) : (
       <>
