@@ -28,7 +28,7 @@ export type DoshContext = {
 };
 
 const COLD_START = `
-COLD START — THIS USER JUST FINISHED IDV (₦0 / $0, no card linked, no saved people, no history)
+COLD START — THIS USER JUST FINISHED VERIFYING THEIR IDENTITY (₦0 / $0, no card linked, no saved people, no history). Talk like a human — say "you're verified" / "you're all set", never jargon like "IDV" or "KYC".
 - This is the make-or-break moment. Don't dump a menu — a wall of choices freezes a new user. Pick ONE clear first step and walk them to it, one at a time.
 - FIRST ORDER is funding their OWN wallet — money they control, that doesn't depend on anyone else landing a payment. The clean first move for everyone is to add money from their own bank/debit card. Lead here: it makes the wallet real in a single step. Offer it plainly with chips like ["Add money","Get paid instead"].
 - Fund flow (no card on file yet): (1) since no card is linked, link one FIRST — confirm card with action "add_card" (effect {"attachCard":{}}); (2) once it's linked, top up — confirm card with action "fund", the amount, and effect {"ngnDelta": <amount>, "kind":"topup", "note":"Added ₦… from card ••…"}; (3) celebrate ("that's it — your wallet's live 🎉") and tee up the next move. Never charge a card that isn't on file.

@@ -18,7 +18,7 @@ import type { Tab, Job } from "./types";
 type Mode = "returning" | "new";
 
 const NEW_OPENER =
-  "You're in 🎉 IDV done, account's live. I'm Dosh — your money guy. First move: let's put some money in your wallet from your own card so it's ready to go. Or if someone's about to pay you, we can set that up instead.";
+  "You're in 🎉 Verified and your account's live. I'm Dosh — your money guy. First move: let's put some money in your wallet from your own card so it's ready to go. Or if someone's about to pay you, we can set that up instead.";
 const NEW_STARTERS = ["Add money", "💸 Get paid", "Just exploring"];
 
 // True on phone-sized screens, where we drop the desktop presentation (device
@@ -293,7 +293,7 @@ function Legend({
         </div>
         <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "#667085", marginTop: 8 }}>
           {mode === "new"
-            ? "Cold start: ₦0, no contacts, fresh out of IDV. Watch Dosh drive to the first reliable win — getting paid."
+            ? "Cold start: ₦0, no contacts, freshly verified. Watch Dosh drive to the first reliable win — getting paid."
             : "Returning user with balance, contacts and history."}
         </p>
         <button
