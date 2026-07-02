@@ -111,7 +111,10 @@ export function DoshTab({
       </div>
 
       {chips.length > 0 && (
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "8px 2px 12px" }}>
+        // Full-bleed carousel: cancel the app's 16px content padding with a
+        // negative margin, then re-add it as inner padding so chips rest
+        // aligned with the feed but scroll clean to the screen edges.
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "8px 16px 12px", margin: "0 -16px" }}>
           {chips.map((c, i) => (
             <button
               key={c}
