@@ -1,0 +1,12 @@
+{
+  "name": "onedosh",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "build": "npm --prefix app ci && npm --prefix app run build",
+    "start": "npm --prefix app start"
+  }
+}
