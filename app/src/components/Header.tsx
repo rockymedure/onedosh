@@ -1,21 +1,24 @@
 import { t, display } from "../theme";
-import { Ripple } from "./ui";
+import { me } from "../data";
+import { Avatar, Ripple } from "./ui";
 import type { Tab } from "../types";
 
 const titles: Record<Tab, string> = {
   activity: "Explore",
+  dosh: "Dosh",
   money: "Money",
-  profile: "Profile",
 };
 
 export function Header({
   tab,
   onBack,
   title,
+  onProfile,
 }: {
   tab: Tab;
   onBack?: () => void;
   title?: string;
+  onProfile?: () => void;
 }) {
   const heading = title ?? titles[tab];
   return (
@@ -71,6 +74,28 @@ export function Header({
           <span style={{ color: t.coral }}>.</span>
         </div>
       </div>
+      {onProfile && (
+        <button
+          onClick={onProfile}
+          title="Profile"
+          aria-label="Profile"
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            border: "none",
+            background: "transparent",
+            padding: 3,
+            borderRadius: 999,
+            cursor: "pointer",
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Avatar label={me.name} src={me.photo} size={34} />
+          <Ripple color="rgba(20,28,51,0.16)" />
+        </button>
+      )}
     </div>
   );
 }

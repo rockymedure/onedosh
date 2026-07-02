@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { t, display, m3, limeGlow } from "./theme";
+import { t, display } from "./theme";
 import { StatusBar } from "./components/StatusBar";
 import { Header } from "./components/Header";
 import { TabBar } from "./components/TabBar";
-import { DoshMark, Ripple } from "./components/ui";
 import { ActivityTab } from "./tabs/ActivityTab";
 import { WorkTab } from "./tabs/WorkTab";
 import { GigDetail } from "./tabs/GigDetail";
@@ -36,9 +35,7 @@ function useIsHandset() {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>("activity");
-  // Dosh is a layer that floats above every tab. Land in it on open.
-  const [doshOpen, setDoshOpen] = useState(true);
+  const [tab, setTab] = useState<Tab>("dosh");
   const [seed, setSeed] = useState<{ text: string; n: number } | undefined>();
   const [status, setStatus] = useState<{ key: boolean; model: string; db?: boolean } | null>(null);
   const [mode, setMode] = useState<Mode>("new");
@@ -47,6 +44,8 @@ export default function App() {
   const [showWork, setShowWork] = useState(false);
   // Deeper drill-in: a single gig's detail page (pushed on top of the board).
   const [gig, setGig] = useState<{ job: Job; booked: boolean } | null>(null);
+  // Profile opens from the header avatar as a drill-in over the current tab.
+  const [showProfile, setShowProfile] = useState(false);
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
   const isHandset = useIsHandset();
@@ -59,12 +58,14 @@ export default function App() {
   function selectTab(next: Tab) {
     setShowWork(false);
     setGig(null);
+    setShowProfile(false);
     setTab(next);
   }
 
   function openDosh(prompt: string) {
     setSeed({ text: prompt, n: Date.now() });
-    setDoshOpen(true);
+    setShowProfile(false);
+    setTab("dosh");
   }
 
   async function reset() {
@@ -72,16 +73,16 @@ export default function App() {
     setReloadKey((k) => k + 1);
     setShowWork(false);
     setGig(null);
-    setTab("activity");
-    setDoshOpen(true);
+    setShowProfile(false);
+    setTab("dosh");
   }
 
   function changeMode(m: Mode) {
     setMode(m);
     setShowWork(false);
     setGig(null);
-    setTab("activity");
-    setDoshOpen(true);
+    setShowProfile(false);
+    setTab("dosh");
   }
 
   const isNew = mode === "new";
@@ -90,39 +91,48 @@ export default function App() {
     : { mode };
 
   const onWorkBoard = tab === "activity" && showWork;
-  // Header back + title for the Explore drill-in stack (Work board → gig detail).
-  const back = gig ? () => setGig(null) : onWorkBoard ? () => setShowWork(false) : undefined;
-  const drillTitle = gig ? "Gig" : onWorkBoard ? "Work" : undefined;
+  // Header back + title for the drill-in stack (Profile, or Explore → Work → gig).
+  const back = showProfile
+    ? () => setShowProfile(false)
+    : gig
+      ? () => setGig(null)
+      : onWorkBoard
+        ? () => setShowWork(false)
+        : undefined;
+  const drillTitle = showProfile ? "Profile" : gig ? "Gig" : onWorkBoard ? "Work" : undefined;
   const shell = (
     <>
       {!isHandset && <StatusBar />}
-      <Header tab={tab} onBack={back} title={drillTitle} />
+      <Header
+        tab={tab}
+        onBack={back}
+        title={drillTitle}
+        onProfile={back ? undefined : () => setShowProfile(true)}
+      />
       <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
-        {tab === "activity" &&
-          (gig ? (
-            <GigDetail job={gig.job} booked={gig.booked} onOpenDosh={openDosh} />
-          ) : onWorkBoard ? (
-            <WorkTab
-              key={`work-${mode}-${reloadKey}`}
-              mode={mode}
-              onOpenDosh={openDosh}
-              onOpenGig={(job, booked) => setGig({ job, booked })}
-            />
-          ) : (
-            <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
-          ))}
-        {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
-        {tab === "profile" && <ProfileTab onOpenDosh={openDosh} />}
+        {showProfile ? (
+          <ProfileTab onOpenDosh={openDosh} />
+        ) : (
+          <>
+            {tab === "activity" &&
+              (gig ? (
+                <GigDetail job={gig.job} booked={gig.booked} onOpenDosh={openDosh} />
+              ) : onWorkBoard ? (
+                <WorkTab
+                  key={`work-${mode}-${reloadKey}`}
+                  mode={mode}
+                  onOpenDosh={openDosh}
+                  onOpenGig={(job, booked) => setGig({ job, booked })}
+                />
+              ) : (
+                <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
+              ))}
+            {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
+            {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
+          </>
+        )}
       </div>
       <TabBar tab={tab} onSelect={selectTab} />
-
-      {/* Dosh floats above every tab — a button when closed, a full layer when open. */}
-      {!doshOpen && <DoshFab onClick={() => setDoshOpen(true)} />}
-      {doshOpen && (
-        <DoshLayer onClose={() => setDoshOpen(false)}>
-          <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />
-        </DoshLayer>
-      )}
     </>
   );
 
@@ -162,89 +172,6 @@ export default function App() {
     >
       <Phone>{shell}</Phone>
       <Legend status={status} mode={mode} onMode={changeMode} onReset={reset} />
-    </div>
-  );
-}
-
-// Floating Dosh entry point — a branded button hovering above the tab bar.
-function DoshFab({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      className="fab-in"
-      onClick={onClick}
-      aria-label="Open Dosh"
-      title="Ask Dosh"
-      style={{
-        position: "absolute",
-        right: 16,
-        bottom: `calc(${m3.navHeight}px + 16px + env(safe-area-inset-bottom))`,
-        width: 62,
-        height: 62,
-        borderRadius: 31,
-        border: "3px solid #fff",
-        background: t.lime,
-        padding: 0,
-        display: "grid",
-        placeItems: "center",
-        overflow: "hidden",
-        cursor: "pointer",
-        zIndex: 60,
-        boxShadow: `${limeGlow}, 0 6px 18px rgba(20,28,51,0.28)`,
-      }}
-    >
-      <DoshMark size={44} />
-      <Ripple color="rgba(20,28,51,0.2)" />
-    </button>
-  );
-}
-
-// Dosh as a full layer above all tabs, with its own top bar.
-function DoshLayer({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div
-      className="sheet-up"
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 70,
-        background: t.bg,
-        display: "flex",
-        flexDirection: "column",
-        paddingTop: "env(safe-area-inset-top)",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <DoshMark size={30} />
-          <span style={{ fontFamily: display, fontSize: 22, fontWeight: 700, color: t.ink, letterSpacing: "-0.03em" }}>
-            Dosh<span style={{ color: t.coral }}>.</span>
-          </span>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Minimize Dosh"
-          title="Close"
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            width: 38,
-            height: 38,
-            borderRadius: 19,
-            border: "none",
-            background: "rgba(20,28,51,0.06)",
-            display: "grid",
-            placeItems: "center",
-            cursor: "pointer",
-            color: t.ink,
-          }}
-        >
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" aria-hidden style={{ display: "block" }}>
-            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <Ripple color="rgba(20,28,51,0.16)" />
-        </button>
-      </div>
-      <div style={{ flex: 1, minHeight: 0, padding: "0 16px 10px" }}>{children}</div>
     </div>
   );
 }
