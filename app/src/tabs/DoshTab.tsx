@@ -79,7 +79,7 @@ export function DoshTab({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingBottom: 12 }}>
       <div ref={scroller} style={{ flex: 1, overflowY: "auto", padding: "4px 2px 8px" }}>
         {feed.map((item, i) => (
           <div key={i} className="dosh-enter" style={{ marginBottom: 16 }}>
@@ -151,6 +151,10 @@ export function DoshTab({
           gap: 8,
           marginTop: 2,
           ...glass,
+          // Tighter, contained shadow — the shared glass shadow (0 8px 30px)
+          // spilled down across the nav bar's top edge and read as an
+          // overlapping panel. Keep it snug to the pill instead.
+          boxShadow: "0 2px 12px rgba(20,28,51,0.08)",
           border: `1.5px solid ${t.navy}`,
           borderRadius: 999,
           padding: "5px 5px 5px 18px",

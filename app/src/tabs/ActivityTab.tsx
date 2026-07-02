@@ -101,7 +101,7 @@ function TagHero() {
 
 // Simple gig-promo module on Explore that drills into the full Work board.
 function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
-  const preview = ["yt-editor", "tiktok", "thumbs"];
+  const preview = ["yt-editor", "tiktok"];
   return (
     <>
       <SectionLabel>Work 💼</SectionLabel>
@@ -131,13 +131,13 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
               <div
                 key={id}
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 12,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 11,
                   overflow: "hidden",
                   background: t.navy,
                   border: "2px solid #141C33",
-                  marginLeft: i === 0 ? 0 : -12,
+                  marginLeft: i === 0 ? 0 : -11,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
                 }}
               >
@@ -148,25 +148,34 @@ function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15.5, fontWeight: 800, fontFamily: display }}>Find work</div>
-          <div style={{ fontSize: 12.5, color: "#AEB8CC", marginTop: 1 }}>
-            Real gigs that pay in dollars — book right here
+          <div
+            style={{
+              fontSize: 12.5,
+              color: "#AEB8CC",
+              marginTop: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            Gigs that pay in dollars
           </div>
         </div>
         <span
+          aria-hidden
           style={{
             flexShrink: 0,
-            fontSize: 12,
-            fontWeight: 800,
-            color: t.limeInk,
-            background: t.lime,
+            width: 34,
+            height: 34,
             borderRadius: 999,
-            padding: "7px 12px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
+            background: t.lime,
+            display: "grid",
+            placeItems: "center",
           }}
         >
-          Browse ›
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
+            <path d="M9 5l7 7-7 7" stroke={t.limeInk} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </span>
       </button>
     </>
