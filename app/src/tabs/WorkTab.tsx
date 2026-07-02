@@ -39,7 +39,15 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "network", label: "In your circle" },
 ];
 
-export function WorkTab({ mode, onOpenDosh }: { mode: Mode; onOpenDosh: (prompt: string) => void }) {
+export function WorkTab({
+  mode,
+  onOpenDosh,
+  embedded = false,
+}: {
+  mode: Mode;
+  onOpenDosh: (prompt: string) => void;
+  embedded?: boolean;
+}) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -62,14 +70,20 @@ export function WorkTab({ mode, onOpenDosh }: { mode: Mode; onOpenDosh: (prompt:
 
   return (
     <div style={{ height: "100%", overflowY: "auto", paddingBottom: 24 }}>
-      <div style={{ padding: "2px 2px 12px" }}>
-        <div style={{ fontFamily: display, fontSize: 26, fontWeight: 700, color: t.ink, letterSpacing: "-0.02em" }}>
-          Find work<span style={{ color: t.lime }}>.</span>
-        </div>
-        <div style={{ fontSize: 13.5, color: t.sub, marginTop: 2 }}>
+      {embedded ? (
+        <div style={{ fontSize: 13.5, color: t.sub, padding: "0 2px 10px" }}>
           Real gigs that pay in dollars — straight into your wallet.
         </div>
-      </div>
+      ) : (
+        <div style={{ padding: "2px 2px 12px" }}>
+          <div style={{ fontFamily: display, fontSize: 26, fontWeight: 700, color: t.ink, letterSpacing: "-0.02em" }}>
+            Find work<span style={{ color: t.lime }}>.</span>
+          </div>
+          <div style={{ fontSize: 13.5, color: t.sub, marginTop: 2 }}>
+            Real gigs that pay in dollars — straight into your wallet.
+          </div>
+        </div>
+      )}
 
       {bookings.length > 0 && (
         <div style={{ marginBottom: 16 }}>

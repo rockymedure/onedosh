@@ -2,15 +2,18 @@ import { useState } from "react";
 import { t, display, limeGlow } from "../theme";
 import { Avatar, AvatarStack, CountUp, LiveDot, SectionLabel } from "../components/ui";
 import { me } from "../data";
+import { gigThumb } from "../gigs";
 import { earnedBoost, faces, nairaShort, nextMilestone, p, type FeedEvent, type GamePool, type Squad } from "../social";
 import { useLiveSocial } from "../useLiveSocial";
 
 export function ActivityTab({
   justVerified = false,
   onOpenDosh,
+  onOpenWork,
 }: {
   justVerified?: boolean;
   onOpenDosh: (prompt: string) => void;
+  onOpenWork: () => void;
 }) {
   const live = useLiveSocial();
 
@@ -18,6 +21,7 @@ export function ActivityTab({
     return (
       <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
         <TagHero />
+        <WorkEntry onOpenWork={onOpenWork} />
         <EmptyNetwork onOpenDosh={onOpenDosh} />
       </div>
     );
@@ -26,6 +30,8 @@ export function ActivityTab({
   return (
     <div style={{ overflowY: "auto", height: "100%", paddingBottom: 20 }}>
       <TagHero />
+
+      <WorkEntry onOpenWork={onOpenWork} />
 
       <SectionLabel>Active now — tap to pay</SectionLabel>
       <ActiveRail ids={live.onlineIds} onOpenDosh={onOpenDosh} />
@@ -88,6 +94,82 @@ function TagHero() {
         </button>
       </div>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------- Work entry */
+
+// Entry point on Explore that drills into the full Work board.
+function WorkEntry({ onOpenWork }: { onOpenWork: () => void }) {
+  const preview = ["yt-editor", "tiktok", "thumbs"];
+  return (
+    <>
+      <SectionLabel>Work 💼</SectionLabel>
+      <button
+        onClick={onOpenWork}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          border: "none",
+          cursor: "pointer",
+          background: "linear-gradient(135deg, #1B2E52 0%, #141C33 60%, #101728 100%)",
+          color: "#fff",
+          borderRadius: t.radiusCard,
+          padding: 14,
+          marginBottom: 14,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ display: "flex", flexShrink: 0 }}>
+          {preview.map((id, i) => {
+            const src = gigThumb(id);
+            return (
+              <div
+                key={id}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: t.navy,
+                  border: "2px solid #141C33",
+                  marginLeft: i === 0 ? 0 : -12,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                }}
+              >
+                {src && <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15.5, fontWeight: 800, fontFamily: display }}>Find work</div>
+          <div style={{ fontSize: 12.5, color: "#AEB8CC", marginTop: 1 }}>
+            Real gigs that pay in dollars — book right here
+          </div>
+        </div>
+        <span
+          style={{
+            flexShrink: 0,
+            fontSize: 12,
+            fontWeight: 800,
+            color: t.limeInk,
+            background: t.lime,
+            borderRadius: 999,
+            padding: "7px 12px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          Browse ›
+        </span>
+      </button>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-export type Tab = "activity" | "work" | "dosh" | "money";
+export type Tab = "activity" | "dosh" | "money";
 
 export type Job = {
   id: string;

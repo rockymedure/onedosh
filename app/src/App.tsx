@@ -37,6 +37,9 @@ export default function App() {
   const [seed, setSeed] = useState<{ text: string; n: number } | undefined>();
   const [status, setStatus] = useState<{ key: boolean; model: string; db?: boolean } | null>(null);
   const [mode, setMode] = useState<Mode>("new");
+  // Work lives inside Explore as a drill-in; this tracks whether we're on the
+  // Explore home or pushed into the Work board (which shows a back arrow).
+  const [showWork, setShowWork] = useState(false);
   // Bumped to force DoshTab to remount (fresh conversation + reloaded state).
   const [reloadKey, setReloadKey] = useState(0);
   const isHandset = useIsHandset();
@@ -44,6 +47,12 @@ export default function App() {
   useEffect(() => {
     health().then((h) => setStatus({ key: h.key, model: h.model, db: h.db }));
   }, []);
+
+  // Tapping a bottom-nav destination resets any drill-in (Android-style).
+  function selectTab(next: Tab) {
+    setShowWork(false);
+    setTab(next);
+  }
 
   function openDosh(prompt: string) {
     setSeed({ text: prompt, n: Date.now() });
@@ -61,17 +70,26 @@ export default function App() {
     ? { mode, opener: NEW_OPENER, starters: NEW_STARTERS }
     : { mode };
 
+  const onWorkBoard = tab === "activity" && showWork;
   const shell = (
     <>
       {!isHandset && <StatusBar />}
-      <Header tab={tab} />
+      <Header
+        tab={tab}
+        onBack={onWorkBoard ? () => setShowWork(false) : undefined}
+        title={onWorkBoard ? "Work" : undefined}
+      />
       <div style={{ flex: 1, minHeight: 0, padding: "12px 16px 0" }}>
-        {tab === "activity" && <ActivityTab justVerified={isNew} onOpenDosh={openDosh} />}
-        {tab === "work" && <WorkTab key={`work-${mode}-${reloadKey}`} mode={mode} onOpenDosh={openDosh} />}
+        {tab === "activity" &&
+          (onWorkBoard ? (
+            <WorkTab key={`work-${mode}-${reloadKey}`} mode={mode} onOpenDosh={openDosh} embedded />
+          ) : (
+            <ActivityTab justVerified={isNew} onOpenDosh={openDosh} onOpenWork={() => setShowWork(true)} />
+          ))}
         {tab === "dosh" && <DoshTab key={`${mode}-${reloadKey}`} seed={seed} {...doshProps} />}
         {tab === "money" && <MoneyTab justVerified={isNew} onOpenDosh={openDosh} />}
       </div>
-      <TabBar tab={tab} onSelect={setTab} />
+      <TabBar tab={tab} onSelect={selectTab} />
     </>
   );
 

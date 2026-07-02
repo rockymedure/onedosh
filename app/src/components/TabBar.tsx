@@ -26,12 +26,6 @@ export function TabBar({ tab, onSelect }: { tab: Tab; onSelect: (t: Tab) => void
         icon={(a) => <ActivityIcon active={a} />}
       />
       <NavItem
-        label="Work"
-        active={tab === "work"}
-        onClick={() => onSelect("work")}
-        icon={(a) => <WorkIcon active={a} />}
-      />
-      <NavItem
         label="Dosh"
         active={tab === "dosh"}
         onClick={() => onSelect("dosh")}
@@ -124,36 +118,6 @@ function ActivityIcon({ active }: { active: boolean }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-// Work — a briefcase. Fills (Material "filled" variant) when active.
-function WorkIcon({ active }: { active: boolean }) {
-  if (active) {
-    return (
-      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
-        <rect x={2.5} y={7.5} width={19} height={12} rx={3} fill="currentColor" />
-        <path
-          d="M9 7.5V6.2A2 2 0 0111 4.2h2a2 2 0 012 2v1.3"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-        />
-        <path d="M2.5 12.5H21.5" stroke={m3.secondaryContainer} strokeWidth={2} strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
-      <rect x={2.5} y={7.5} width={19} height={12} rx={3} stroke="currentColor" strokeWidth={2} />
-      <path
-        d="M9 7.5V6.2A2 2 0 0111 4.2h2a2 2 0 012 2v1.3"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <path d="M2.5 12.5H21.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
     </svg>
   );
 }
