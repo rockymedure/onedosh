@@ -223,7 +223,7 @@ export function CardArt({
   const background =
     art.kind === "image"
       ? printed
-        ? `url(${art.src}) center/contain no-repeat ${faceBg}`
+        ? `url(${art.src}) center/cover no-repeat ${faceBg}`
         : `url(${art.src}) center/cover no-repeat`
       : art.kind === "eclipse"
         ? ECLIPSE_BG[art.mode]
