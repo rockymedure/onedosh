@@ -20,6 +20,9 @@ export type CardArt =
       sub: string;
       accent: string;
       accentInk: string;
+      // When the artwork already carries its own chip / motif (a printed face),
+      // suppress the synthetic chip, wordmark and number so they don't collide.
+      printed?: boolean;
     }
   | {
       // The greco-futurist "Eclipse" card, drawn natively in CSS so it carries
@@ -43,8 +46,9 @@ export const CARD_DESIGNS = {
   onyx: {
     last4: "4921",
     art: {
-      kind: "eclipse",
-      mode: "onyx",
+      kind: "image",
+      src: "/cards/onyx-face.png",
+      printed: true,
       ink: "#F4ECD9",
       sub: "#C7B694",
       accent: "#E8C583",
@@ -54,10 +58,11 @@ export const CARD_DESIGNS = {
   ivory: {
     last4: "4921",
     art: {
-      kind: "eclipse",
-      mode: "ivory",
+      kind: "image",
+      src: "/cards/ivory-face.png",
+      printed: true,
       ink: "#2A2420",
-      sub: "#7A6E5C",
+      sub: "#5C5346",
       accent: "#B0794A",
       accentInk: "#FFFFFF",
     },

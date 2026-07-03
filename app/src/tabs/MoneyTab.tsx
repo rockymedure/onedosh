@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { t, glass, glassBorder, greco, cinzel, cormorant } from "../theme";
+import { t, glass, glassBorder, greco, syne } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
 import { CardArt } from "../money/CardArt";
@@ -537,10 +537,10 @@ function BalanceCard({
           <span style={{ width: 6, height: 6, borderRadius: 3, background: accent }} />
           <span
             style={{
-              fontFamily: cinzel,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.18em",
+              fontFamily: syne,
+              fontSize: 10.5,
+              fontWeight: 700,
+              letterSpacing: "0.24em",
               textTransform: "uppercase",
               color: greco.sub,
             }}
@@ -550,16 +550,17 @@ function BalanceCard({
         </div>
         <div
           style={{
-            fontFamily: cormorant,
-            fontSize: 44,
-            fontWeight: 600,
+            fontFamily: syne,
+            fontSize: 38,
+            fontWeight: 700,
             lineHeight: 1.05,
-            marginTop: 6,
-            letterSpacing: "-0.01em",
+            marginTop: 7,
+            letterSpacing: "-0.03em",
+            fontVariantNumeric: "tabular-nums",
             color: greco.ink,
           }}
         >
-          <span style={{ color: accent, marginRight: 2 }}>{symbol}</span>
+          <span style={{ color: accent, marginRight: 3, fontWeight: 600 }}>{symbol}</span>
           {amount}
         </div>
         {isFront && (

@@ -1,4 +1,4 @@
-import { t, cinzel, greco } from "../theme";
+import { t, syne, greco } from "../theme";
 import { me } from "../data";
 import { Avatar, Ripple } from "./ui";
 import type { Tab } from "../types";
@@ -60,11 +60,11 @@ export function Header({
         )}
         <div
           style={{
-            fontFamily: cinzel,
-            fontSize: onBack ? 20 : 25,
-            fontWeight: 600,
+            fontFamily: syne,
+            fontSize: onBack ? 21 : 27,
+            fontWeight: 800,
             color: t.ink,
-            letterSpacing: "0.04em",
+            letterSpacing: "-0.02em",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",

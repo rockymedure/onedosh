@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { t, cinzel, greco } from "../theme";
+import { t, syne, greco } from "../theme";
 
 // Material 3 touch ripple. Drop it inside any clickable element that is
 // `position: relative; overflow: hidden;` — it binds to its parent, so no
@@ -321,10 +321,10 @@ export function SectionLabel({
         display: "flex",
         alignItems: "center",
         gap: 10,
-        fontFamily: cinzel,
-        fontSize: 11.5,
-        fontWeight: 600,
-        letterSpacing: "0.2em",
+        fontFamily: syne,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.28em",
         textTransform: "uppercase",
         color: greco.sub,
         margin: "6px 2px",

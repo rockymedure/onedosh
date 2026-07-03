@@ -56,8 +56,10 @@ export const font =
 
 export const display = '"Space Grotesk", -apple-system, "Segoe UI", sans-serif';
 
-// Greco-futurist type: Cinzel (Roman inscriptional caps) for labels/headings,
-// Cormorant Garamond (elegant serif) for figures and quiet display text.
+// Greco-futurist type. Syne bridges classical proportion with a futuristic,
+// engineered edge — used for monumental labels, headings, and balance figures.
+// Cinzel / Cormorant kept available for anything that wants pure antiquity.
+export const syne = '"Syne", "Space Grotesk", -apple-system, sans-serif';
 export const cinzel = '"Cinzel", "Times New Roman", Georgia, serif';
 export const cormorant = '"Cormorant Garamond", "Times New Roman", Georgia, serif';
 

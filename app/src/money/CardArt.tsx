@@ -3,6 +3,16 @@ import type { CardArt as Art, Overlay } from "./cards";
 
 const RATIO = 0.628; // ISO credit-card aspect (height / width)
 
+// Rough perceptual luminance of a #rrggbb color (0–255).
+function hexLuma(hex: string) {
+  const h = hex.replace("#", "");
+  if (h.length < 6) return 200;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
 // Decorative pattern layers, drawn purely in CSS so template drops are instant.
 function overlayLayer(overlay: Overlay, accent: string): CSSProperties | null {
   const base: CSSProperties = { position: "absolute", inset: 0, pointerEvents: "none" };
@@ -196,6 +206,17 @@ export function CardArt({
   const height = Math.round(width * RATIO);
   const overlay = art.kind === "template" ? overlayLayer(art.overlay, art.accent) : null;
 
+  // A "printed" image face already carries its own chip + artwork, so we drop
+  // the synthetic chrome and keep only a quiet cardholder footer.
+  const printed = art.kind === "image" && art.printed === true;
+  const lightInk = art.kind !== "template" ? hexLuma(art.ink) > 140 : true;
+  const imgShadow =
+    art.kind === "image"
+      ? lightInk
+        ? "0 1px 8px rgba(0,0,0,0.55)"
+        : "0 1px 6px rgba(255,255,255,0.65)"
+      : "none";
+
   const background =
     art.kind === "image"
       ? `url(${art.src}) center/cover no-repeat`
@@ -243,7 +264,7 @@ export function CardArt({
       >
         {/* FRONT */}
         <div style={{ ...face, background }}>
-          {art.kind === "image" && (
+          {art.kind === "image" && !printed && (
             <span
               aria-hidden
               style={{
@@ -251,6 +272,23 @@ export function CardArt({
                 inset: 0,
                 background:
                   "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.55) 100%)",
+              }}
+            />
+          )}
+          {/* Printed face: only a whisper of a scrim under the footer so the
+              cardholder name stays legible over the artwork. */}
+          {printed && (
+            <span
+              aria-hidden
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: "42%",
+                background: lightInk
+                  ? "linear-gradient(180deg, transparent, rgba(0,0,0,0.42))"
+                  : "linear-gradient(180deg, transparent, rgba(255,255,255,0.40))",
               }}
             />
           )}
@@ -283,64 +321,72 @@ export function CardArt({
             }}
           />
 
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
-          >
-            <span
-              style={{
-                fontWeight: 800,
-                fontSize: 17 * scale,
-                letterSpacing: -0.3,
-                color: art.ink,
-                textShadow: art.kind === "image" ? "0 1px 8px rgba(0,0,0,0.5)" : "none",
-              }}
-            >
-              One<span style={{ color: art.accent }}>Dosh</span>
-            </span>
-            <span
-              style={{
-                fontSize: 10 * scale,
-                fontWeight: 800,
-                letterSpacing: 0.3,
-                color: art.accentInk,
-                background: art.accent,
-                borderRadius: 999,
-                padding: `${3 * scale}px ${9 * scale}px`,
-              }}
-            >
-              Virtual · USD
-            </span>
-          </div>
-
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              gap: 10 * scale,
-            }}
-          >
-            <Chip scale={scale} />
-            <Contactless color={art.ink} scale={scale} />
-          </div>
-
-          <div style={{ position: "relative" }}>
+          {!printed && (
             <div
               style={{
-                fontSize: 17 * scale,
-                letterSpacing: 2.5 * scale,
-                fontWeight: 600,
-                fontVariantNumeric: "tabular-nums",
-                textShadow: art.kind === "image" ? "0 1px 8px rgba(0,0,0,0.5)" : "none",
+                position: "relative",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
               }}
             >
-              ••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;{last4}
+              <span
+                style={{
+                  fontWeight: 800,
+                  fontSize: 17 * scale,
+                  letterSpacing: -0.3,
+                  color: art.ink,
+                  textShadow: art.kind === "image" ? "0 1px 8px rgba(0,0,0,0.5)" : "none",
+                }}
+              >
+                One<span style={{ color: art.accent }}>Dosh</span>
+              </span>
+              <span
+                style={{
+                  fontSize: 10 * scale,
+                  fontWeight: 800,
+                  letterSpacing: 0.3,
+                  color: art.accentInk,
+                  background: art.accent,
+                  borderRadius: 999,
+                  padding: `${3 * scale}px ${9 * scale}px`,
+                }}
+              >
+                Virtual · USD
+              </span>
             </div>
+          )}
+          {/* printed face: nudge the footer to the very bottom */}
+          {printed && <div style={{ flex: 1 }} />}
+
+          {!printed && (
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                gap: 10 * scale,
+              }}
+            >
+              <Chip scale={scale} />
+              <Contactless color={art.ink} scale={scale} />
+            </div>
+          )}
+
+          <div style={{ position: "relative" }}>
+            {!printed && (
+              <div
+                style={{
+                  fontSize: 17 * scale,
+                  letterSpacing: 2.5 * scale,
+                  fontWeight: 600,
+                  fontVariantNumeric: "tabular-nums",
+                  textShadow: art.kind === "image" ? "0 1px 8px rgba(0,0,0,0.5)" : "none",
+                }}
+              >
+                ••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;{last4}
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
@@ -370,7 +416,7 @@ export function CardArt({
                     color: art.ink,
                     textTransform: "uppercase",
                     letterSpacing: 0.6,
-                    textShadow: art.kind === "image" ? "0 1px 6px rgba(0,0,0,0.5)" : "none",
+                    textShadow: imgShadow,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -378,6 +424,22 @@ export function CardArt({
                 >
                   {name}
                 </div>
+                {printed && (
+                  <div
+                    style={{
+                      fontSize: 11 * scale,
+                      fontWeight: 600,
+                      color: art.ink,
+                      letterSpacing: 2 * scale,
+                      fontVariantNumeric: "tabular-nums",
+                      textShadow: imgShadow,
+                      marginTop: 3 * scale,
+                      opacity: 0.9,
+                    }}
+                  >
+                    ••••&nbsp;{last4}
+                  </div>
+                )}
               </div>
               <span
                 style={{
@@ -386,7 +448,7 @@ export function CardArt({
                   fontSize: 16 * scale,
                   letterSpacing: -0.5,
                   color: art.ink,
-                  textShadow: art.kind === "image" ? "0 1px 8px rgba(0,0,0,0.5)" : "none",
+                  textShadow: imgShadow,
                 }}
               >
                 VISA
