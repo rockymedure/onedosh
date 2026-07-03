@@ -210,6 +210,9 @@ export function CardArt({
   // the synthetic chrome and keep only a quiet cardholder footer.
   const printed = art.kind === "image" && art.printed === true;
   const lightInk = art.kind !== "template" ? hexLuma(art.ink) > 140 : true;
+  // Fill behind a transparent (background-removed) printed face so its rounded
+  // corners + any letterbox blend seamlessly with the card body.
+  const faceBg = printed ? (lightInk ? "#0f0b07" : "#f4efe6") : undefined;
   const imgShadow =
     art.kind === "image"
       ? lightInk
@@ -219,7 +222,9 @@ export function CardArt({
 
   const background =
     art.kind === "image"
-      ? `url(${art.src}) center/cover no-repeat`
+      ? printed
+        ? `url(${art.src}) center/contain no-repeat ${faceBg}`
+        : `url(${art.src}) center/cover no-repeat`
       : art.kind === "eclipse"
         ? ECLIPSE_BG[art.mode]
         : art.background;
