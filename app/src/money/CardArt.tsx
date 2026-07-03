@@ -51,6 +51,72 @@ function overlayLayer(overlay: Overlay, accent: string): CSSProperties | null {
   }
 }
 
+// The "Eclipse" card face, drawn in CSS: marble ground + a gold sunburst
+// annulus + a glowing eclipse ring + a thin center rule. Sits behind the card
+// content (chip / number / name).
+function EclipseDecor({ mode, scale }: { mode: "onyx" | "ivory"; scale: number }) {
+  const isOnyx = mode === "onyx";
+  const cx = 68; // % — hero pushed right, chip stays clear on the left
+  const cy = 47;
+  const ring = 128 * scale;
+  const rays = isOnyx ? "rgba(226,190,120,0.55)" : "rgba(176,121,74,0.5)";
+  const ringGold = isOnyx ? "#E8C583" : "#B0794A";
+  const glow = isOnyx ? "rgba(232,197,131,0.55)" : "rgba(176,121,74,0.4)";
+  const rule = isOnyx ? "rgba(226,190,120,0.42)" : "rgba(176,121,74,0.4)";
+
+  return (
+    <>
+      {/* fine sunburst rays, masked to an annulus around the ring */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: `repeating-conic-gradient(from 0deg at ${cx}% ${cy}%, ${rays} 0deg 0.4deg, transparent 0.4deg 3deg)`,
+          WebkitMaskImage: `radial-gradient(circle at ${cx}% ${cy}%, transparent ${ring / 2 - 1}px, #000 ${ring / 2}px, #000 ${ring}px, transparent ${ring * 1.18}px)`,
+          maskImage: `radial-gradient(circle at ${cx}% ${cy}%, transparent ${ring / 2 - 1}px, #000 ${ring / 2}px, #000 ${ring}px, transparent ${ring * 1.18}px)`,
+          opacity: 0.75,
+        }}
+      />
+      {/* thin center rule line — the "eclipse-split" device */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: `${cy}%`,
+          height: Math.max(1, 1 * scale),
+          background: `linear-gradient(90deg, transparent, ${rule} 12%, ${rule} 88%, transparent)`,
+          pointerEvents: "none",
+        }}
+      />
+      {/* the eclipse ring — transparent center lets the marble show through */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: `${cx}%`,
+          top: `${cy}%`,
+          width: ring,
+          height: ring,
+          transform: "translate(-50%,-50%)",
+          borderRadius: "50%",
+          border: `${Math.max(1.4, 1.6 * scale)}px solid ${ringGold}`,
+          boxShadow: `0 0 ${16 * scale}px ${glow}, inset 0 0 ${10 * scale}px ${glow}`,
+          pointerEvents: "none",
+        }}
+      />
+    </>
+  );
+}
+
+const ECLIPSE_BG = {
+  onyx: "radial-gradient(150% 130% at 62% 30%, #262019 0%, #14110c 52%, #0a0806 100%)",
+  ivory: "radial-gradient(150% 130% at 50% 24%, #ffffff 0%, #f3ede2 58%, #e7ded0 100%)",
+} as const;
+
 function Chip({ scale }: { scale: number }) {
   return (
     <div
@@ -133,7 +199,9 @@ export function CardArt({
   const background =
     art.kind === "image"
       ? `url(${art.src}) center/cover no-repeat`
-      : art.background;
+      : art.kind === "eclipse"
+        ? ECLIPSE_BG[art.mode]
+        : art.background;
 
   const radius = 24 * scale;
   const face: CSSProperties = {
@@ -187,6 +255,7 @@ export function CardArt({
             />
           )}
           {overlay && <span style={overlay} />}
+          {art.kind === "eclipse" && <EclipseDecor mode={art.mode} scale={scale} />}
           {art.kind === "template" && art.glow && (
             <span
               aria-hidden
@@ -334,7 +403,9 @@ export function CardArt({
             background:
               art.kind === "image"
                 ? "linear-gradient(150deg, #12141C, #05070b)"
-                : art.background,
+                : art.kind === "eclipse"
+                  ? ECLIPSE_BG[art.mode]
+                  : art.background,
             justifyContent: "flex-start",
             padding: 0,
           }}

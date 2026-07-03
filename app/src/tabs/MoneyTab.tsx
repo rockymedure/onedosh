@@ -3,7 +3,7 @@ import { t, glass, glassBorder, limeGlow } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
 import { CardArt } from "../money/CardArt";
-import { CARD } from "../money/cards";
+import { CARD, CARD_DESIGNS, type CardMode } from "../money/cards";
 
 export function MoneyTab({
   justVerified = false,
@@ -52,6 +52,8 @@ export function MoneyTab({
 function CardBlock() {
   const ref = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(328);
+  const [mode, setMode] = useState<CardMode>("onyx");
+  const design = CARD_DESIGNS[mode];
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -66,9 +68,74 @@ function CardBlock() {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div ref={ref} style={{ position: "relative", zIndex: 2, width: "100%" }}>
-        <CardArt art={CARD.art} name={context.name} last4={CARD.last4} width={w} />
+        <CardArt art={design.art} name={context.name} last4={design.last4} width={w} editionLabel="Eclipse" />
       </div>
       <ApplePayButton />
+      <CardModeToggle mode={mode} onChange={setMode} />
+    </div>
+  );
+}
+
+function CardModeToggle({ mode, onChange }: { mode: CardMode; onChange: (m: CardMode) => void }) {
+  const opts: { id: CardMode; label: string; dot: string }[] = [
+    { id: "onyx", label: "Onyx", dot: "#0d0b08" },
+    { id: "ivory", label: "Ivory", dot: "#efe8db" },
+  ];
+  return (
+    <div
+      role="tablist"
+      aria-label="Card finish"
+      style={{
+        display: "inline-flex",
+        gap: 4,
+        marginTop: 14,
+        padding: 4,
+        borderRadius: 999,
+        background: glass.background,
+        border: glassBorder,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
+    >
+      {opts.map((o) => {
+        const active = o.id === mode;
+        return (
+          <button
+            key={o.id}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(o.id)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              border: "none",
+              cursor: "pointer",
+              borderRadius: 999,
+              padding: "7px 14px",
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: 0.2,
+              color: active ? t.ink : t.sub,
+              background: active ? "#fff" : "transparent",
+              boxShadow: active ? "0 4px 12px rgba(20,28,51,0.12)" : "none",
+              transition: "background 0.2s ease, color 0.2s ease",
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                background: o.dot,
+                border: "1px solid rgba(20,28,51,0.18)",
+              }}
+            />
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

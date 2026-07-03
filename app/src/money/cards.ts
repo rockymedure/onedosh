@@ -20,6 +20,16 @@ export type CardArt =
       sub: string;
       accent: string;
       accentInk: string;
+    }
+  | {
+      // The greco-futurist "Eclipse" card, drawn natively in CSS so it carries
+      // the real chip / number / name while keeping the onyx+gold aesthetic.
+      kind: "eclipse";
+      mode: "onyx" | "ivory";
+      ink: string;
+      sub: string;
+      accent: string; // ring / rays / chip gold
+      accentInk: string;
     };
 
 export type CardDesign = {
@@ -27,17 +37,33 @@ export type CardDesign = {
   art: CardArt;
 };
 
-// The OneDosh card: deep black with a halftone dot field and electric lime.
-export const CARD: CardDesign = {
-  last4: "4921",
-  art: {
-    kind: "template",
-    background: "radial-gradient(120% 140% at 30% 20%, #1d2430 0%, #0b0e14 55%, #05070b 100%)",
-    overlay: "halftone",
-    ink: "#FFFFFF",
-    sub: "#AEB8CC",
-    accent: "#CFF23F",
-    accentInk: "#3E4A00",
-    glow: "#CFF23F",
+// The OneDosh "Eclipse" card — greco-futurist distilled: onyx marble, gold
+// sunburst + ring. Ships with a light (ivory) twin.
+export const CARD_DESIGNS = {
+  onyx: {
+    last4: "4921",
+    art: {
+      kind: "eclipse",
+      mode: "onyx",
+      ink: "#F4ECD9",
+      sub: "#C7B694",
+      accent: "#E8C583",
+      accentInk: "#2A2012",
+    },
   },
-};
+  ivory: {
+    last4: "4921",
+    art: {
+      kind: "eclipse",
+      mode: "ivory",
+      ink: "#2A2420",
+      sub: "#7A6E5C",
+      accent: "#B0794A",
+      accentInk: "#FFFFFF",
+    },
+  },
+} satisfies Record<string, CardDesign>;
+
+export type CardMode = keyof typeof CARD_DESIGNS;
+
+export const CARD: CardDesign = CARD_DESIGNS.onyx;
