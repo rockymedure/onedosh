@@ -1,4 +1,4 @@
-import { t, display } from "../theme";
+import { t, cinzel, greco } from "../theme";
 import { me } from "../data";
 import { Avatar, Ripple } from "./ui";
 import type { Tab } from "../types";
@@ -60,18 +60,18 @@ export function Header({
         )}
         <div
           style={{
-            fontFamily: display,
-            fontSize: onBack ? 22 : 27,
-            fontWeight: 700,
+            fontFamily: cinzel,
+            fontSize: onBack ? 20 : 25,
+            fontWeight: 600,
             color: t.ink,
-            letterSpacing: "-0.03em",
+            letterSpacing: "0.04em",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
           }}
         >
           {heading}
-          <span style={{ color: t.coral }}>.</span>
+          <span style={{ color: greco.gold }}>.</span>
         </div>
       </div>
       {onProfile && (
