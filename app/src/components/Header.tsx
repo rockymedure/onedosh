@@ -1,4 +1,4 @@
-import { t, syne, greco } from "../theme";
+import { t, display } from "../theme";
 import { me } from "../data";
 import { Avatar, Ripple } from "./ui";
 import type { Tab } from "../types";
@@ -60,18 +60,18 @@ export function Header({
         )}
         <div
           style={{
-            fontFamily: syne,
-            fontSize: onBack ? 21 : 27,
-            fontWeight: 800,
+            fontFamily: display,
+            fontSize: onBack ? 22 : 27,
+            fontWeight: 700,
             color: t.ink,
-            letterSpacing: "-0.02em",
+            letterSpacing: "-0.03em",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
           }}
         >
           {heading}
-          <span style={{ color: greco.gold }}>.</span>
+          <span style={{ color: t.coral }}>.</span>
         </div>
       </div>
       {onProfile && (

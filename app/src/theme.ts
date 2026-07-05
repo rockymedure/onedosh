@@ -38,8 +38,8 @@ export const m3 = {
   onSurfaceVariant: "#5C6270", // inactive icon + label
 
   // Secondary container = the pill behind the active nav item.
-  secondaryContainer: "#EEE0C7", // soft champagne-gold tint
-  onSecondaryContainer: "#3A2E1C", // active icon on the pill (deep bronze)
+  secondaryContainer: "#E6EFBE", // soft lime tint
+  onSecondaryContainer: "#141C33", // active icon on the pill
 
   outline: "#79747E",
   outlineVariant: "#CFCCC2",
@@ -55,13 +55,6 @@ export const font =
   '"Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 export const display = '"Space Grotesk", -apple-system, "Segoe UI", sans-serif';
-
-// Greco-futurist type. Syne bridges classical proportion with a futuristic,
-// engineered edge — used for monumental labels, headings, and balance figures.
-// Cinzel / Cormorant kept available for anything that wants pure antiquity.
-export const syne = '"Syne", "Space Grotesk", -apple-system, sans-serif';
-export const cinzel = '"Cinzel", "Times New Roman", Georgia, serif';
-export const cormorant = '"Cormorant Garamond", "Times New Roman", Georgia, serif';
 
 // Greco-futurist palette — warm marble, bronze-gold, deep onyx. Kept light and
 // restrained: the accent is a thin gold line, never a fill.

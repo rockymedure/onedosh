@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { t, glass, glassBorder, greco, syne } from "../theme";
+import { t, glass, glassBorder, greco, display } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
 import { CardArt } from "../money/CardArt";
@@ -377,7 +377,7 @@ function BalanceStack({
       sub: justVerified
         ? "Your first payment lands here"
         : `≈ ₦${(usd * context.nairaPerUsd).toLocaleString()} at today's rate`,
-      surface: greco.marbleWarm,
+      surface: "#FFFFFF",
       accent: greco.gold,
       actions: justVerified
         ? [
@@ -395,7 +395,7 @@ function BalanceStack({
       symbol: "₦",
       amount: ngn.toLocaleString(),
       sub: `Rate ₦${context.nairaPerUsd.toLocaleString()}/$`,
-      surface: greco.marbleCool,
+      surface: "#F6F4EE",
       accent: "#9C6B3E",
       actions: justVerified
         ? [
@@ -426,47 +426,6 @@ function BalanceStack({
         );
       })}
     </div>
-  );
-}
-
-// A restrained, light eclipse motif for the balance cards: a thin gold ring
-// sitting off the top-right corner, cradled by a few faint sun-rays. Quiet
-// enough to sit behind the balance figure — a whisper, not a hero.
-function BalanceEclipse({ accent }: { accent: string }) {
-  const cx = 88;
-  const cy = 18;
-  const ring = 92;
-  return (
-    <>
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          background: `repeating-conic-gradient(from 0deg at ${cx}% ${cy}%, ${accent}55 0deg 0.4deg, transparent 0.4deg 4deg)`,
-          WebkitMaskImage: `radial-gradient(circle at ${cx}% ${cy}%, transparent ${ring / 2 - 1}px, #000 ${ring / 2}px, #000 ${ring}px, transparent ${ring * 1.2}px)`,
-          maskImage: `radial-gradient(circle at ${cx}% ${cy}%, transparent ${ring / 2 - 1}px, #000 ${ring / 2}px, #000 ${ring}px, transparent ${ring * 1.2}px)`,
-          opacity: 0.4,
-        }}
-      />
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: `${cx}%`,
-          top: `${cy}%`,
-          width: ring,
-          height: ring,
-          transform: "translate(-50%,-50%)",
-          borderRadius: "50%",
-          border: `1.5px solid ${accent}`,
-          boxShadow: `0 0 14px ${accent}44`,
-          opacity: 0.7,
-          pointerEvents: "none",
-        }}
-      />
-    </>
   );
 }
 
@@ -506,42 +465,26 @@ function BalanceCard({
         height: CARD_H,
         overflow: "hidden",
         background: surface,
-        border: `1px solid ${greco.hairline}`,
+        border: `1px solid ${t.border}`,
         borderRadius: t.radiusCard,
         padding: 18,
         color: greco.ink,
         zIndex: isFront ? 2 : 1,
         opacity: isFront ? 1 : 0.98,
         boxShadow: isFront
-          ? "0 14px 30px -14px rgba(90,68,40,0.30)"
-          : "0 8px 18px -10px rgba(90,68,40,0.18)",
+          ? "0 12px 26px -14px rgba(20,28,51,0.20)"
+          : "0 6px 16px -10px rgba(20,28,51,0.14)",
         cursor: isFront ? "default" : "pointer",
         transition: "top 0.3s ease, left 0.3s ease, right 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease",
       }}
     >
-      <BalanceEclipse accent={accent} />
-      {/* a hairline gold rule at the base — a quiet classical baseline */}
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 18,
-          right: 18,
-          bottom: 0,
-          height: 1,
-          background: `linear-gradient(90deg, transparent, ${greco.hairline} 20%, ${greco.hairline} 80%, transparent)`,
-        }}
-      />
       <div style={{ position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ width: 6, height: 6, borderRadius: 3, background: accent }} />
           <span
             style={{
-              fontFamily: syne,
-              fontSize: 10.5,
-              fontWeight: 700,
-              letterSpacing: "0.24em",
-              textTransform: "uppercase",
+              fontSize: 13,
+              fontWeight: 600,
               color: greco.sub,
             }}
           >
@@ -550,17 +493,17 @@ function BalanceCard({
         </div>
         <div
           style={{
-            fontFamily: syne,
-            fontSize: 38,
-            fontWeight: 700,
+            fontFamily: display,
+            fontSize: 34,
+            fontWeight: 800,
             lineHeight: 1.05,
-            marginTop: 7,
-            letterSpacing: "-0.03em",
+            marginTop: 6,
+            letterSpacing: "-0.02em",
             fontVariantNumeric: "tabular-nums",
             color: greco.ink,
           }}
         >
-          <span style={{ color: accent, marginRight: 3, fontWeight: 600 }}>{symbol}</span>
+          <span style={{ color: accent, marginRight: 3, fontWeight: 700 }}>{symbol}</span>
           {amount}
         </div>
         {isFront && (
