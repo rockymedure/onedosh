@@ -1,10 +1,10 @@
 // OneDosh — animate the card-stack hero as a night TIME-LAPSE.
 //
-// Uses xAI Grok Imagine (image-to-video) to bring the still moonlit-canyon stack
-// to life: the sky moves through time while the floating cards stay stationary
-// and cool light plays across the marble and gold.
+// Uses Google Veo 3.1 (image-to-video) at 1080p to bring the still moonlit-canyon
+// stack to life: the sky moves through time while the floating cards stay
+// stationary and cool light plays across the marble and gold.
 //
-// Model:  xai/grok-imagine-video/image-to-video
+// Model:  fal-ai/veo3.1/image-to-video  (1080p)
 // Usage:  node scripts/gen-stack-video.mjs
 // Output: public/scene/stack-wide.mp4
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -30,7 +30,7 @@ if (!process.env.FAL_KEY) {
 }
 fal.config({ credentials: process.env.FAL_KEY });
 
-const MODEL = "xai/grok-imagine-video/image-to-video";
+const MODEL = "fal-ai/veo3.1/image-to-video";
 const SRC = join(APP_ROOT, "public", "scene", "stack-wide.jpg");
 const OUT = join(APP_ROOT, "public", "scene", "stack-wide.mp4");
 
@@ -54,14 +54,17 @@ async function main() {
   const bytes = readFileSync(SRC);
   const image_url = await fal.storage.upload(new Blob([bytes], { type: "image/jpeg" }));
 
-  console.log("Generating night time-lapse (Grok Imagine, 720p)…");
+  console.log("Generating night time-lapse (Veo 3.1, 1080p)…");
   const res = await fal.subscribe(MODEL, {
     input: {
       prompt: PROMPT,
       image_url,
-      duration: 10,
+      duration: "8s",
       aspect_ratio: "16:9",
-      resolution: "720p",
+      resolution: "1080p",
+      generate_audio: false,
+      negative_prompt:
+        "camera movement, zoom, pan, dolly, parallax, cards moving, cards rotating, cards drifting, warping, morphing, text, watermark, people",
     },
     logs: true,
     onQueueUpdate: (u) => {
