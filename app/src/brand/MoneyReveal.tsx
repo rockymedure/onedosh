@@ -13,8 +13,8 @@ import { Avatar, DoshMark } from "../components/ui";
 // theme), and the card face (ivory marble <-> Luminova glow). The screen mirrors
 // the real Money tab; nothing here touches the live app.
 
-const BG_DAY = "/scene/bg-g11-day.jpg";
-const BG_NIGHT = "/scene/bg-g11-night.jpg";
+const BG_DAY = "/scene/bg-day.png";
+const BG_NIGHT = "/scene/bg-night.png";
 const CARD_DAY_SRC = "/scene/card-day.png";
 const CARD_NIGHT_SRC = "/scene/card-night.png";
 
