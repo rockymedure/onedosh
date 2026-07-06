@@ -15,6 +15,10 @@ function Root() {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
+  // Path-based entry for the marketing hero scene (deployed at /visual), with a
+  // #reveal hash kept as a convenience alias.
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/visual"))
+    return <MoneyReveal />;
   if (hash.startsWith("#board")) return <Board />;
   if (hash.startsWith("#reveal")) return <MoneyReveal />;
   if (hash.startsWith("#brand")) return <Landing />;

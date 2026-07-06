@@ -13,8 +13,8 @@ import { Avatar, DoshMark } from "../components/ui";
 // theme), and the card face (ivory marble <-> Luminova glow). The screen mirrors
 // the real Money tab; nothing here touches the live app.
 
-const BG_DAY = "/scene/bg-day.png";
-const BG_NIGHT = "/scene/bg-night.png";
+const BG_DAY = "/scene/bg-g11-day.jpg";
+const BG_NIGHT = "/scene/bg-g11-night.jpg";
 const CARD_DAY_SRC = "/scene/card-day.png";
 const CARD_NIGHT_SRC = "/scene/card-night.png";
 
@@ -91,10 +91,10 @@ const cardDay: Art = {
   kind: "image",
   src: CARD_DAY_SRC,
   printed: true,
-  ink: "#2A2420",
-  sub: "#5C5346",
-  accent: "#B0794A",
-  accentInk: "#FFFFFF",
+  ink: "#F2ECE0",
+  sub: "#C9BCA3",
+  accent: "#D9B36A",
+  accentInk: "#1A140D",
 };
 
 const cardNight: Art = {
@@ -106,17 +106,6 @@ const cardNight: Art = {
   accent: "#CFF23F",
   accentInk: "#12141C",
 };
-
-// The six card designs, shown in the cinematic coverflow gallery. Faces follow
-// the global day/night toggle (light marble by day, Luminova glow at night).
-const GALLERY: { id: string; name: string }[] = [
-  { id: "meander", name: "Meander" },
-  { id: "rails", name: "Rails" },
-  { id: "arc", name: "Arc" },
-  { id: "fluting", name: "Fluting" },
-  { id: "onyx", name: "Onyx" },
-  { id: "baseline", name: "Baseline" },
-];
 
 function usePrefersReducedMotion() {
   const query = "(prefers-reduced-motion: reduce)";
@@ -556,7 +545,7 @@ function MoneyScreen({
   night: boolean;
   reduced: boolean;
   cardWidth: number;
-  contentRef: React.RefObject<HTMLDivElement>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const c = sceneTheme(night);
   const ease = "cubic-bezier(0.22,1,0.36,1)";
@@ -673,213 +662,8 @@ function MoneyScreen({
   );
 }
 
-// Segmented control, top-left of the scene: Phone <-> Gallery.
-function ViewToggle({
-  view,
-  onChange,
-  reduced,
-}: {
-  view: "phone" | "gallery";
-  onChange: (v: "phone" | "gallery") => void;
-  reduced: boolean;
-}) {
-  const opts: { id: "phone" | "gallery"; label: string }[] = [
-    { id: "phone", label: "Phone" },
-    { id: "gallery", label: "Gallery" },
-  ];
-  return (
-    <div
-      style={{
-        display: "inline-flex",
-        gap: 3,
-        padding: 4,
-        borderRadius: 999,
-        background: "rgba(255,255,255,0.5)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6), 0 6px 20px rgba(20,28,51,0.18)",
-      }}
-    >
-      {opts.map((o) => {
-        const active = o.id === view;
-        return (
-          <button
-            key={o.id}
-            onClick={() => onChange(o.id)}
-            style={{
-              border: "none",
-              cursor: "pointer",
-              borderRadius: 999,
-              padding: "7px 15px",
-              fontFamily: display,
-              fontSize: 13,
-              fontWeight: 700,
-              letterSpacing: 0.1,
-              color: active ? "#141C33" : "#5C6270",
-              background: active ? "#fff" : "transparent",
-              boxShadow: active ? "0 2px 8px rgba(20,28,51,0.15)" : "none",
-              transition: reduced ? "none" : "background 200ms ease, color 200ms ease",
-            }}
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// Cinematic coverflow gallery of the six card designs. Mouse parallax tilts the
-// whole set; hovering lifts a card and squares it up; clicking centers it.
-function CardGallery({ night, reduced }: { night: boolean; reduced: boolean }) {
-  const [center, setCenter] = useState(0);
-  const [hover, setHover] = useState<number | null>(null);
-  const [par, setPar] = useState({ x: 0, y: 0 });
-  const stageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") setCenter((c) => Math.min(GALLERY.length - 1, c + 1));
-      if (e.key === "ArrowLeft") setCenter((c) => Math.max(0, c - 1));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  const onMove = (e: React.MouseEvent) => {
-    if (reduced) return;
-    const el = stageRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setPar({
-      x: ((e.clientX - r.left) / r.width - 0.5) * 2,
-      y: ((e.clientY - r.top) / r.height - 0.5) * 2,
-    });
-  };
-
-  const W = 300;
-  const H = Math.round(W * 0.628);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 22 }}>
-      <div
-        ref={stageRef}
-        onMouseMove={onMove}
-        onMouseLeave={() => setPar({ x: 0, y: 0 })}
-        style={{ position: "relative", width: "min(760px, 86vw)", height: 340, perspective: 1400 }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            transformStyle: "preserve-3d",
-            transform: `rotateX(${-par.y * 5}deg) rotateY(${par.x * 7}deg)`,
-            transition: reduced ? "none" : "transform 220ms ease-out",
-          }}
-        >
-          {GALLERY.map((card, i) => {
-            const o = i - center;
-            const isCenter = o === 0;
-            const hovered = hover === i;
-            const tx = o * 132;
-            const ry = isCenter ? 0 : -Math.max(-1.4, Math.min(1.4, o)) * 40;
-            const tz = -Math.abs(o) * 130 + (hovered ? 70 : 0);
-            const ty = hovered ? -20 : 0;
-            const sc = isCenter ? 1 : 0.82;
-            const src = `/scene/gallery/${card.id}-${night ? "dark" : "light"}.png`;
-            return (
-              <div
-                key={card.id}
-                onMouseEnter={() => setHover(i)}
-                onMouseLeave={() => setHover((h) => (h === i ? null : h))}
-                onClick={() => setCenter(i)}
-                style={{
-                  position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  width: W,
-                  height: H,
-                  marginLeft: -W / 2,
-                  marginTop: -H / 2,
-                  transform: `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px) rotateY(${hovered ? 0 : ry}deg) scale(${hovered ? sc + 0.05 : sc})`,
-                  transition: reduced ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1)",
-                  zIndex: 100 - Math.abs(o),
-                  opacity: Math.abs(o) > 3 ? 0 : 1,
-                  cursor: "pointer",
-                  borderRadius: 20,
-                  overflow: "hidden",
-                  boxShadow:
-                    isCenter || hovered
-                      ? "0 34px 64px -20px rgba(0,0,0,0.62)"
-                      : "0 16px 40px -20px rgba(0,0,0,0.5)",
-                  outline: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <img
-                  src={src}
-                  alt={card.name}
-                  draggable={false}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-                {night && (
-                  <span
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: -1,
-                      borderRadius: 20,
-                      boxShadow: "inset 0 0 26px rgba(207,242,63,0.10)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ textAlign: "center" }}>
-        <div
-          style={{
-            fontFamily: display,
-            color: night ? "#E9EEDE" : "#F7F1E6",
-            fontWeight: 700,
-            fontSize: 18,
-            letterSpacing: "-0.01em",
-            textShadow: "0 2px 14px rgba(0,0,0,0.55)",
-          }}
-        >
-          {GALLERY[center].name}
-        </div>
-        <div style={{ display: "flex", gap: 7, justifyContent: "center", marginTop: 12 }}>
-          {GALLERY.map((c, i) => (
-            <button
-              key={c.id}
-              onClick={() => setCenter(i)}
-              aria-label={c.name}
-              style={{
-                width: i === center ? 20 : 7,
-                height: 7,
-                borderRadius: 999,
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                background: i === center ? (night ? "#CFF23F" : "#F7F1E6") : "rgba(255,255,255,0.45)",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-                transition: reduced ? "none" : "width 300ms ease, background 300ms ease",
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function MoneyReveal() {
   const [night, setNight] = useState(false);
-  const [view, setView] = useState<"phone" | "gallery">("phone");
   const reduced = usePrefersReducedMotion();
   const bgDur = reduced ? "0ms" : "700ms";
 
@@ -950,53 +734,16 @@ export function MoneyReveal() {
         }}
       />
 
-      {/* view toggle — floats on the background, top-left of the scene */}
-      <div style={{ position: "absolute", top: 28, left: 28, zIndex: 6 }}>
-        <ViewToggle view={view} onChange={setView} reduced={reduced} />
-      </div>
-
       {/* day/night toggle — floats on the background, top-right of the scene */}
       <div style={{ position: "absolute", top: 28, right: 28, zIndex: 6 }}>
         <DayNightToggle night={night} onToggle={() => setNight((v) => !v)} reduced={reduced} />
       </div>
 
-      {/* stage: phone <-> gallery crossfade */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 2,
-          display: "grid",
-          placeItems: "center",
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            gridArea: "1 / 1",
-            opacity: view === "phone" ? 1 : 0,
-            transform: reduced ? "none" : `scale(${view === "phone" ? 1 : 0.94})`,
-            transition: reduced ? "none" : "opacity 450ms ease, transform 550ms cubic-bezier(0.22,1,0.36,1)",
-            pointerEvents: view === "phone" ? "auto" : "none",
-          }}
-        >
-          <PhoneFrame screenBg={sceneTheme(night).screenBg} sideButtons={false}>
-            <MoneyScreen night={night} reduced={reduced} cardWidth={cardWidth} contentRef={contentRef} />
-          </PhoneFrame>
-        </div>
-
-        <div
-          style={{
-            gridArea: "1 / 1",
-            width: "100%",
-            opacity: view === "gallery" ? 1 : 0,
-            transform: reduced ? "none" : `scale(${view === "gallery" ? 1 : 1.06})`,
-            transition: reduced ? "none" : "opacity 450ms ease, transform 550ms cubic-bezier(0.22,1,0.36,1)",
-            pointerEvents: view === "gallery" ? "auto" : "none",
-          }}
-        >
-          <CardGallery night={night} reduced={reduced} />
-        </div>
+      {/* phone, centered — no metallic side buttons in the hero */}
+      <div style={{ position: "relative", zIndex: 2 }}>
+        <PhoneFrame screenBg={sceneTheme(night).screenBg} sideButtons={false}>
+          <MoneyScreen night={night} reduced={reduced} cardWidth={cardWidth} contentRef={contentRef} />
+        </PhoneFrame>
       </div>
     </div>
   );
