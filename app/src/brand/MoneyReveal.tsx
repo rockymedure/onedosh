@@ -18,6 +18,8 @@ const BG_DAY = "/scene/bg-day.png";
 const BG_NIGHT = "/scene/bg-night.png";
 const CARD_DAY_SRC = "/scene/card-day.png";
 const CARD_NIGHT_SRC = "/scene/card-night.png";
+const STACK_VIDEO = "/scene/stack-wide.mp4";
+const STACK_POSTER = "/scene/stack-wide.jpg";
 
 type Palette = {
   screenBg: string;
@@ -123,6 +125,66 @@ function usePrefersReducedMotion() {
 }
 
 // A sun/moon switch that floats on the background, top-right of the scene.
+type View = "phone" | "gallery";
+
+// Segmented control (top-left): switch between the live phone screen and the
+// cinematic card-stack gallery.
+function ViewToggle({
+  view,
+  onChange,
+  reduced,
+}: {
+  view: View;
+  onChange: (v: View) => void;
+  reduced: boolean;
+}) {
+  const dur = reduced ? "0ms" : "300ms";
+  const opt = (key: View, label: string) => {
+    const active = view === key;
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(key)}
+        aria-pressed={active}
+        style={{
+          appearance: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: "7px 15px",
+          borderRadius: 999,
+          fontFamily: font,
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: "0.02em",
+          color: active ? "#12140C" : "rgba(255,255,255,0.85)",
+          background: active ? "rgba(255,255,255,0.92)" : "transparent",
+          transition: `background ${dur} ease, color ${dur} ease`,
+        }}
+      >
+        {label}
+      </button>
+    );
+  };
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 2,
+        padding: 3,
+        borderRadius: 999,
+        background: "rgba(16,17,20,0.5)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18), 0 6px 20px rgba(0,0,0,0.3)",
+      }}
+    >
+      {opt("phone", "Phone")}
+      {opt("gallery", "Gallery")}
+    </div>
+  );
+}
+
 function DayNightToggle({
   night,
   onToggle,
@@ -666,6 +728,7 @@ function MoneyScreen({
 
 export function MoneyReveal() {
   const [night, setNight] = useState(false);
+  const [view, setView] = useState<View>("phone");
   const reduced = usePrefersReducedMotion();
   const bgDur = reduced ? "0ms" : "700ms";
 
@@ -736,17 +799,49 @@ export function MoneyReveal() {
         }}
       />
 
-      {/* day/night toggle — floats on the background, top-right of the scene */}
-      <div style={{ position: "absolute", top: 28, right: 28, zIndex: 6 }}>
-        <DayNightToggle night={night} onToggle={() => setNight((v) => !v)} reduced={reduced} />
+      {/* cinematic card-stack gallery — the Veo time-lapse, full-bleed */}
+      {view === "gallery" && (
+        <video
+          src={STACK_VIDEO}
+          poster={STACK_POSTER}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            zIndex: 3,
+            background: "#06070a",
+          }}
+        />
+      )}
+
+      {/* view toggle — floats on the background, top-left of the scene */}
+      <div style={{ position: "absolute", top: 28, left: 28, zIndex: 6 }}>
+        <ViewToggle view={view} onChange={setView} reduced={reduced} />
       </div>
 
+      {/* day/night toggle — top-right, only relevant for the phone view */}
+      {view === "phone" && (
+        <div style={{ position: "absolute", top: 28, right: 28, zIndex: 6 }}>
+          <DayNightToggle night={night} onToggle={() => setNight((v) => !v)} reduced={reduced} />
+        </div>
+      )}
+
       {/* phone, centered — no metallic side buttons in the hero */}
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <PhoneFrame screenBg={sceneTheme(night).screenBg} sideButtons={false}>
-          <MoneyScreen night={night} reduced={reduced} cardWidth={cardWidth} contentRef={contentRef} />
-        </PhoneFrame>
-      </div>
+      {view === "phone" && (
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <PhoneFrame screenBg={sceneTheme(night).screenBg} sideButtons={false}>
+            <MoneyScreen night={night} reduced={reduced} cardWidth={cardWidth} contentRef={contentRef} />
+          </PhoneFrame>
+        </div>
+      )}
     </div>
   );
 }
