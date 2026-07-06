@@ -22,17 +22,15 @@ const BASE = join(APP_ROOT, "public", "scene", "stack-wide.jpg");
 const OUT = join(APP_ROOT, "public", "scene", "stack-wide.png");
 
 const PROMPT = [
-  "Relight this nighttime scene so the floating cards are clearly LIT BY THE MOON.",
-  "MOVE the luminous MOON OUT from directly behind the card stack — reposition it higher and off to one side in the open",
-  "night sky (upper area of the opening), so it is no longer hidden behind the cards and reads as a distinct light source in",
-  "clear sky. The moon no longer sits centered behind the stack.",
-  "Cast the card stack in that MOONLIGHT: cool silver-blue light rakes across the marble faces from the moon's direction,",
-  "bright specular highlights and rim light on the edges and gold line-work facing the moon, with soft falloff into gentle",
-  "shadow on the far side, and soft cast shadows between the stacked cards. The cards look sculpted and illuminated, not flat.",
-  "Keep the floating STACK of four marble cards as the clear hero in the SAME positions and design — onyx-black, pale",
-  "Carrara, honey-bronze and verde-green marble with fine gold line-work and the engraved 'D' monogram. Keep the dark",
-  "rock-canyon walls in quiet shadow and the same wide 16:9 framing. Photorealistic, cinematic, moody. No text, no numbers,",
-  "no logos.",
+  "Edit this nighttime scene: REMOVE the moon entirely. There must be NO moon, NO moon disc, NO bright glowing orb anywhere",
+  "in the sky. Replace it with clean, deep dark-blue night sky with only a subtle soft gradient and faint stars where the",
+  "moon used to be — calm, uncluttered open sky.",
+  "Keep the floating STACK of four marble cards exactly as the hero, in the SAME positions and design — onyx-black, pale",
+  "Carrara, honey-bronze and verde-green marble with fine gold line-work and the engraved 'D' monogram.",
+  "The cards stay softly moonlit from an OFF-SCREEN cool light source: gentle silver-blue rim light and specular highlights",
+  "on the edges and gold line-work, with soft falloff into shadow — but the light source itself is NOT visible in frame.",
+  "Keep the dark rock-canyon walls in quiet shadow and the same wide 16:9 framing. Photorealistic, cinematic, moody and",
+  "minimal. No text, no numbers, no logos.",
 ].join(" ");
 
 async function main() {
