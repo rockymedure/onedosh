@@ -36,36 +36,39 @@ if (!process.env.FAL_KEY) {
 fal.config({ credentials: process.env.FAL_KEY });
 
 const MODEL = "fal-ai/nano-banana-pro/edit";
-const LAYOUT = join(APP_ROOT, "public", "board", "inspo", "05.png");
+const BG = join(APP_ROOT, "public", "scene", "stack-bg.png");
 const CARD = join(APP_ROOT, "public", "scene", "card-day.png");
-const BG = join(APP_ROOT, "public", "board", "greco", "g4.jpg");
+const LAYOUT = join(APP_ROOT, "public", "board", "inspo", "05.png");
 const OUT = join(APP_ROOT, "public", "scene", "card-stack.png");
 
 const PROMPT = [
-  "Premium fintech product hero image, photorealistic, ultra-detailed, high-end studio photography.",
-  "Recreate the floating EXPLODED CARD-STACK LAYOUT of the FIRST reference image: several identical-format payment cards",
-  "fanned diagonally in mid-air, evenly offset and overlapping, each casting a soft realistic shadow on the one below.",
-  "The cards use the exact DESIGN LANGUAGE of the SECOND reference image: a luxury MARBLE payment card with fine GOLD",
-  "line-work — concentric gold arc grooves wrapping a brushed-metal EMV chip on the left, fine gold hairline rules, small",
-  "etched triangle marks, and a small engraved GOLD 'D' monogram in the BOTTOM-RIGHT corner.",
+  "Premium fintech product hero, photorealistic, ultra-detailed, cinematic.",
+  "Use the FIRST image as the SCENE and SETTING: a dramatic moonlit rock canyon whose towering eroded walls open upward",
+  "to a soft blue twilight sky with a luminous MOON in the central opening. Keep this environment, its framing, its rock",
+  "walls and its moon.",
+  "Into the CENTRAL SKY OPENING (around and just below the moon), composite a floating EXPLODED STACK of premium payment",
+  "cards, arranged and fanned diagonally with even offsets and overlap exactly like the layout of the THIRD image — several",
+  "cards suspended in mid-air, each casting a soft realistic shadow on the one beneath it.",
+  "The cards use the exact DESIGN of the SECOND image: a luxury MARBLE payment card with fine GOLD line-work — concentric",
+  "gold arc grooves wrapping a brushed-metal EMV chip on the left, fine gold hairline rules, small etched triangle marks,",
+  "and a small engraved GOLD 'D' monogram in the BOTTOM-RIGHT corner.",
   "Render a family of FOUR such cards in complementary MARBLE finishes — deep black onyx, pale Carrara white, warm",
-  "honey/bronze-veined, and dark verde green — ALL sharing the SAME gold geometry, the same chip position, and the same",
-  "gold 'D' mark.",
-  "Set the stack against the moody moonlit environment of the THIRD reference image (pale eroded rock walls opening to a",
-  "soft blue night sky with a luminous moon), softly blurred with shallow depth of field so the cards remain the hero.",
-  "Cinematic light, crisp reflections on polished marble and gold, rich depth. No text, no numbers, no other logos.",
+  "honey/bronze-veined, and dark verde green — ALL sharing the SAME gold geometry, chip position, and gold 'D' mark.",
+  "The floating cards catch cool MOONLIGHT with crisp reflections on the polished marble and gold; the moon stays subtly",
+  "visible behind and between them. The rock walls remain sharp and dramatic, framing the cards as the hero.",
+  "No text, no numbers, no other logos.",
 ].join(" ");
 
 async function main() {
-  for (const p of [LAYOUT, CARD, BG]) {
+  for (const p of [BG, CARD, LAYOUT]) {
     if (!existsSync(p)) {
       console.error(`Missing reference: ${p}`);
       process.exit(1);
     }
   }
-  console.log("Uploading references (layout, card, background)…");
+  console.log("Uploading references (scene bg, card, layout)…");
   const urls = [];
-  for (const p of [LAYOUT, CARD, BG]) {
+  for (const p of [BG, CARD, LAYOUT]) {
     const bytes = readFileSync(p);
     const type = p.endsWith(".jpg") || p.endsWith(".jpeg") ? "image/jpeg" : "image/png";
     urls.push(await fal.storage.upload(new Blob([bytes], { type })));
@@ -76,7 +79,7 @@ async function main() {
     input: {
       prompt: PROMPT,
       image_urls: urls,
-      aspect_ratio: "1:1",
+      aspect_ratio: "3:4",
       resolution: "4K",
       output_format: "png",
       num_images: 1,

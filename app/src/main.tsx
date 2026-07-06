@@ -4,6 +4,7 @@ import App from "./App";
 import { Landing } from "./brand/Landing";
 import { Board } from "./brand/Board";
 import { MoneyReveal } from "./brand/MoneyReveal";
+import { StackHero } from "./brand/StackHero";
 import "./index.css";
 
 // Tiny hash router: `#brand` shows the greco-futuristic brand landing page;
@@ -19,8 +20,11 @@ function Root() {
   // #reveal hash kept as a convenience alias.
   if (typeof window !== "undefined" && window.location.pathname.startsWith("/visual"))
     return <MoneyReveal />;
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/stack"))
+    return <StackHero />;
   if (hash.startsWith("#board")) return <Board />;
   if (hash.startsWith("#reveal")) return <MoneyReveal />;
+  if (hash.startsWith("#stack")) return <StackHero />;
   if (hash.startsWith("#brand")) return <Landing />;
   return <App />;
 }
