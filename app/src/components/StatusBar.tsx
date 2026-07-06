@@ -1,10 +1,13 @@
 import { m3 } from "../theme";
+import { useClock } from "./useClock";
 
 // Android (Material 3) status bar.
 // Clock sits on the left (Android convention); the right cluster carries the
 // system icons — mobile signal, Wi-Fi and a portrait battery. Icons are inlined
 // SVG so they don't depend on expiring Figma asset URLs.
-export function StatusBar({ time = "9:41", battery = 84 }: { time?: string; battery?: number }) {
+export function StatusBar({ time, battery = 84 }: { time?: string; battery?: number }) {
+  const live = useClock();
+  const label = time ?? live;
   return (
     <div
       style={{
@@ -24,7 +27,7 @@ export function StatusBar({ time = "9:41", battery = 84 }: { time?: string; batt
           letterSpacing: "0.1px",
         }}
       >
-        {time}
+        {label}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <Signal />

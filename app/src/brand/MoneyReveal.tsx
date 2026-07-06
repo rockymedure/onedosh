@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t, greco, display, font } from "../theme";
 import { PhoneFrame } from "../components/PhoneFrame";
+import { useClock } from "../components/useClock";
 import { CardArt } from "../money/CardArt";
 import type { CardArt as Art } from "../money/cards";
 import { context, me } from "../data";
@@ -367,6 +368,7 @@ function WalletBtn({
 
 // Android status bar — themed clock + system icons (mirrors StatusBar.tsx).
 function StatusBarThemed({ c, reduced }: { c: Palette; reduced: boolean }) {
+  const time = useClock();
   return (
     <div
       style={{
@@ -379,7 +381,7 @@ function StatusBarThemed({ c, reduced }: { c: Palette; reduced: boolean }) {
       }}
     >
       <div style={{ fontFamily: font, fontSize: 14, fontWeight: 600, letterSpacing: "0.1px" }}>
-        9:41
+        {time}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <svg width="15" height="12" viewBox="0 0 15 12" fill="none" aria-hidden>
