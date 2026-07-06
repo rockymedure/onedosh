@@ -18,18 +18,20 @@ loadEnv();
 if (process.env.FAL_KEY) fal.config({ credentials: process.env.FAL_KEY });
 
 const MODEL = "fal-ai/nano-banana-pro/edit";
-const BASE = join(APP_ROOT, "public", "scene", "stack-wide.png");
+const BASE = join(APP_ROOT, "public", "scene", "stack-wide.jpg");
 const OUT = join(APP_ROOT, "public", "scene", "stack-wide.png");
 
 const PROMPT = [
-  "Edit this image with a SINGLE change: fix the MOON so it is strictly BEHIND the floating cards.",
-  "There is currently a bright moon disc overlapping and sitting ON TOP OF the pale white marble card in the center —",
-  "REMOVE that overlapping disc entirely. The moon must only be visible in the OPEN SKY behind the card stack and must be",
-  "fully hidden wherever any card covers it. Cards are always the frontmost layer; nothing from the sky renders in front of",
-  "a card face.",
-  "Keep EVERYTHING ELSE identical: the same four marble cards (onyx, Carrara, honey-bronze, verde) in the exact same",
-  "positions, the same gold line-work and 'D' monograms, the same rock-canyon walls, the same wide 16:9 framing, the same",
-  "soft blue twilight sky and cool moonlight. Photorealistic, cinematic. No text, no numbers, no logos.",
+  "Convert this scene to deep NIGHTTIME so it feels calm and uncluttered, not busy.",
+  "Plunge the rock-canyon walls into DARK, near-black shadow with only faint rim moonlight on their edges, so the busy rock",
+  "texture recedes and quiets down. Turn the sky into a deep dark blue night with the luminous MOON as the main light source",
+  "behind the cards, casting a soft glow into the opening.",
+  "Keep the floating STACK of four marble cards as the clear hero, in the EXACT same positions and design — onyx-black,",
+  "pale Carrara, honey-bronze and verde-green marble with fine gold line-work and the engraved 'D' monogram. The cards are",
+  "moonlit and the gold line-work reads softly luminous against the dark scene. Cards remain the frontmost layer; the moon",
+  "stays strictly BEHIND them.",
+  "Preserve the same wide 16:9 framing and composition. Photorealistic, cinematic, moody and minimal. No text, no numbers,",
+  "no logos.",
 ].join(" ");
 
 async function main() {
@@ -45,7 +47,8 @@ async function main() {
   const urls = [];
   {
     const bytes = readFileSync(BASE);
-    urls.push(await fal.storage.upload(new Blob([bytes], { type: "image/png" })));
+    const type = BASE.endsWith(".png") ? "image/png" : "image/jpeg";
+    urls.push(await fal.storage.upload(new Blob([bytes], { type })));
   }
   console.log("Fixing moon behind cards (4K)…");
   const res = await fal.subscribe(MODEL, {
