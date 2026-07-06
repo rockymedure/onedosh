@@ -22,15 +22,16 @@ const BASE = join(APP_ROOT, "public", "scene", "stack-wide.jpg");
 const OUT = join(APP_ROOT, "public", "scene", "stack-wide.png");
 
 const PROMPT = [
-  "Convert this scene to deep NIGHTTIME so it feels calm and uncluttered, not busy.",
-  "Plunge the rock-canyon walls into DARK, near-black shadow with only faint rim moonlight on their edges, so the busy rock",
-  "texture recedes and quiets down. Turn the sky into a deep dark blue night with the luminous MOON as the main light source",
-  "behind the cards, casting a soft glow into the opening.",
-  "Keep the floating STACK of four marble cards as the clear hero, in the EXACT same positions and design — onyx-black,",
-  "pale Carrara, honey-bronze and verde-green marble with fine gold line-work and the engraved 'D' monogram. The cards are",
-  "moonlit and the gold line-work reads softly luminous against the dark scene. Cards remain the frontmost layer; the moon",
-  "stays strictly BEHIND them.",
-  "Preserve the same wide 16:9 framing and composition. Photorealistic, cinematic, moody and minimal. No text, no numbers,",
+  "Relight this nighttime scene so the floating cards are clearly LIT BY THE MOON.",
+  "MOVE the luminous MOON OUT from directly behind the card stack — reposition it higher and off to one side in the open",
+  "night sky (upper area of the opening), so it is no longer hidden behind the cards and reads as a distinct light source in",
+  "clear sky. The moon no longer sits centered behind the stack.",
+  "Cast the card stack in that MOONLIGHT: cool silver-blue light rakes across the marble faces from the moon's direction,",
+  "bright specular highlights and rim light on the edges and gold line-work facing the moon, with soft falloff into gentle",
+  "shadow on the far side, and soft cast shadows between the stacked cards. The cards look sculpted and illuminated, not flat.",
+  "Keep the floating STACK of four marble cards as the clear hero in the SAME positions and design — onyx-black, pale",
+  "Carrara, honey-bronze and verde-green marble with fine gold line-work and the engraved 'D' monogram. Keep the dark",
+  "rock-canyon walls in quiet shadow and the same wide 16:9 framing. Photorealistic, cinematic, moody. No text, no numbers,",
   "no logos.",
 ].join(" ");
 
