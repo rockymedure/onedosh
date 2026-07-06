@@ -194,6 +194,7 @@ export function CardArt({
   width = 328,
   flipped = false,
   editionLabel,
+  hideNetwork = false,
 }: {
   art: Art;
   name: string;
@@ -201,6 +202,7 @@ export function CardArt({
   width?: number;
   flipped?: boolean;
   editionLabel?: string;
+  hideNetwork?: boolean;
 }) {
   const scale = width / 328;
   const height = Math.round(width * RATIO);
@@ -446,18 +448,20 @@ export function CardArt({
                   </div>
                 )}
               </div>
-              <span
-                style={{
-                  fontStyle: "italic",
-                  fontWeight: 800,
-                  fontSize: 16 * scale,
-                  letterSpacing: -0.5,
-                  color: art.ink,
-                  textShadow: imgShadow,
-                }}
-              >
-                VISA
-              </span>
+              {!hideNetwork && (
+                <span
+                  style={{
+                    fontStyle: "italic",
+                    fontWeight: 800,
+                    fontSize: 16 * scale,
+                    letterSpacing: -0.5,
+                    color: art.ink,
+                    textShadow: imgShadow,
+                  }}
+                >
+                  VISA
+                </span>
+              )}
             </div>
           </div>
         </div>

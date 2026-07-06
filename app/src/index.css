@@ -182,6 +182,85 @@ input {
 }
 .fab-in { animation: fabIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.35) both; }
 
+/* ------------------------------------------------------------------ *
+ * Greco-futuristic brand landing (#brand) — scoped `.gf-` styles.
+ * ------------------------------------------------------------------ */
+@keyframes gfReveal {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes gfFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes gfDriftX {
+  0% { background-position: 0 0; }
+  100% { background-position: 1216px 0; }
+}
+@keyframes gfShine {
+  0% { background-position: -220% 0; }
+  100% { background-position: 220% 0; }
+}
+.gf-reveal { animation: gfReveal 0.9s cubic-bezier(0.16, 0.84, 0.3, 1) both; }
+.gf-float { animation: gfFloat 6s ease-in-out infinite; }
+
+.gf-cta {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.gf-cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.gf-cta:active { transform: translateY(0); }
+
+.gf-ghost { transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease; }
+
+.gf-link { position: relative; transition: color 0.18s ease; }
+.gf-link::after {
+  content: "";
+  position: absolute; left: 0; bottom: -4px;
+  width: 0; height: 1px; background: currentColor;
+  transition: width 0.24s ease;
+}
+.gf-link:hover::after { width: 100%; }
+
+.gf-pillar {
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.3, 1), border-color 0.24s ease,
+    box-shadow 0.24s ease, background 0.24s ease;
+}
+.gf-pillar:hover {
+  transform: translateY(-6px);
+}
+
+.gf-goldtext {
+  background: linear-gradient(96deg, #C68A2E 0%, #F4D58D 32%, #E9B44C 55%, #F7E4B0 78%, #C68A2E 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gfShine 9s linear infinite;
+}
+
+@media (max-width: 900px) {
+  .gf-hero-grid { grid-template-columns: 1fr !important; }
+  .gf-pillars { grid-template-columns: 1fr !important; }
+  .gf-nav-links { display: none !important; }
+  .gf-meet-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Reference board masonry — responsive column count. */
+@media (max-width: 1100px) { .gf-board-grid { column-count: 3 !important; } }
+@media (max-width: 720px) { .gf-board-grid { column-count: 2 !important; } }
+@media (max-width: 440px) { .gf-board-grid { column-count: 1 !important; } }
+
+/* "Elements" brand page — responsive collapses. */
+@media (max-width: 820px) {
+  .gf-el-grid3 { grid-template-columns: 1fr !important; }
+  .gf-mark { grid-template-columns: 1fr !important; }
+  .gf-cardrow { grid-template-columns: 1fr !important; }
+  .gf-swatches { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 560px) {
+  .gf-el-grid { grid-template-columns: repeat(4, 1fr) !important; }
+}
+
 /* Hide scrollbars everywhere while keeping scroll behaviour intact. */
 * {
   scrollbar-width: none; /* Firefox */
