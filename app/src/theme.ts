@@ -56,6 +56,23 @@ export const font =
 
 export const display = '"Space Grotesk", -apple-system, "Segoe UI", sans-serif';
 
+// Greco-futurist palette — warm marble, bronze-gold, deep onyx. Kept light and
+// restrained: the accent is a thin gold line, never a fill.
+export const greco = {
+  marbleWarm: "linear-gradient(155deg, #FBF7F0 0%, #F3ECE0 60%, #ECE3D4 100%)",
+  marbleCool: "linear-gradient(155deg, #F8F7F3 0%, #EEEDE7 58%, #E6E5DD 100%)",
+  onyx: "linear-gradient(150deg, #211B14 0%, #14110C 60%, #0B0908 100%)",
+  ink: "#241E17", // onyx-brown text on marble
+  sub: "#8A7C67",
+  faint: "#B4A88F",
+  gold: "#B0794A", // bronze-gold accent line
+  goldBright: "#C79155",
+  goldSoft: "rgba(176,121,74,0.55)",
+  goldFaint: "rgba(176,121,74,0.16)",
+  hairline: "rgba(176,121,74,0.28)",
+  ivory: "#F5EFE4",
+} as const;
+
 // iOS 26 "Liquid Glass" surface — frosted, floating, translucent.
 export const glass = {
   background: "rgba(255,255,255,0.55)",

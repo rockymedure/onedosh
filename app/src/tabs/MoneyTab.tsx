@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { t, glass, glassBorder, limeGlow } from "../theme";
+import { t, glass, glassBorder, greco, display } from "../theme";
 import { SectionLabel } from "../components/ui";
 import { context, discover } from "../data";
 import { CardArt } from "../money/CardArt";
@@ -26,23 +26,38 @@ export function MoneyTab({
             key={d}
             onClick={() => onOpenDosh(d)}
             style={{
-              ...glass,
-              border: glassBorder,
+              position: "relative",
+              overflow: "hidden",
+              background: greco.marbleWarm,
+              border: `1px solid ${greco.hairline}`,
               borderRadius: t.radiusInner,
-              padding: "16px 14px",
+              padding: "16px 14px 16px 18px",
               fontSize: 14,
               fontWeight: 600,
-              color: t.ink,
+              color: greco.ink,
               textAlign: "left",
               cursor: "pointer",
             }}
           >
+            <span
+              aria-hidden
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 12,
+                bottom: 12,
+                width: 2,
+                borderRadius: 2,
+                background: greco.gold,
+                opacity: 0.6,
+              }}
+            />
             {d}
           </button>
         ))}
       </div>
 
-      <div style={{ textAlign: "center", color: t.faint, fontSize: 12, marginTop: 16 }}>
+      <div style={{ textAlign: "center", color: greco.faint, fontSize: 12, marginTop: 16 }}>
         Account & settings live in your profile (top right).
       </div>
     </div>
@@ -160,8 +175,8 @@ function EmptyCard({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
         cursor: "pointer",
         textAlign: "left",
         color: "#fff",
-        background: CARD.art.kind === "template" ? CARD.art.background : t.navy,
-        boxShadow: "0 12px 28px rgba(20,28,51,0.20)",
+        background: greco.onyx,
+        boxShadow: "0 12px 28px rgba(20,17,12,0.35)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -189,7 +204,7 @@ function EmptyCard({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
           width: 160,
           height: 160,
           borderRadius: "50%",
-          background: t.lime,
+          background: greco.gold,
           filter: "blur(48px)",
           pointerEvents: "none",
         }}
@@ -197,8 +212,8 @@ function EmptyCard({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
 
       {/* Header: brand (dimmed) + "Not active yet" status */}
       <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: -0.3, opacity: 0.6 }}>
-          One<span style={{ color: t.lime }}>Dosh</span>
+        <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: -0.3, opacity: 0.7 }}>
+          One<span style={{ color: greco.goldBright }}>Dosh</span>
         </span>
         <span
           style={{
@@ -272,11 +287,11 @@ function EmptyCard({ onOpenDosh }: { onOpenDosh: (prompt: string) => void }) {
             gap: 5,
             fontSize: 12.5,
             fontWeight: 800,
-            color: t.limeInk,
-            background: t.lime,
+            color: "#1B160F",
+            background: greco.goldBright,
             borderRadius: 999,
             padding: "8px 13px",
-            boxShadow: limeGlow,
+            boxShadow: "0 6px 18px rgba(176,121,74,0.5)",
             flexShrink: 0,
           }}
         >
@@ -362,11 +377,8 @@ function BalanceStack({
       sub: justVerified
         ? "Your first payment lands here"
         : `≈ ₦${(usd * context.nairaPerUsd).toLocaleString()} at today's rate`,
-      base: t.navy,
-      image: "/cards/dollar.png",
-      scrim:
-        "linear-gradient(112deg, rgba(20,28,51,0.94) 0%, rgba(20,28,51,0.78) 38%, rgba(20,28,51,0.30) 70%, rgba(20,28,51,0.05) 100%)",
-      accent: t.lime,
+      surface: "#FFFFFF",
+      accent: greco.gold,
       actions: justVerified
         ? [
             { label: "Get paid", prompt: "I want to get paid", primary: true },
@@ -383,11 +395,8 @@ function BalanceStack({
       symbol: "₦",
       amount: ngn.toLocaleString(),
       sub: `Rate ₦${context.nairaPerUsd.toLocaleString()}/$`,
-      base: "#241452",
-      image: "/cards/naira.png",
-      scrim:
-        "linear-gradient(112deg, rgba(36,20,82,0.95) 0%, rgba(36,20,82,0.82) 40%, rgba(36,20,82,0.38) 72%, rgba(36,20,82,0.08) 100%)",
-      accent: t.lime,
+      surface: "#F6F4EE",
+      accent: "#9C6B3E",
       actions: justVerified
         ? [
             { label: "Get paid", prompt: "I want to get paid", primary: true },
@@ -425,9 +434,7 @@ function BalanceCard({
   symbol,
   amount,
   sub,
-  base,
-  image,
-  scrim,
+  surface,
   accent,
   actions,
   isFront,
@@ -439,9 +446,7 @@ function BalanceCard({
   symbol: string;
   amount: string;
   sub: string;
-  base: string;
-  image: string;
-  scrim: string;
+  surface: string;
   accent: string;
   actions: { label: string; prompt: string; primary?: boolean }[];
   isFront: boolean;
@@ -459,42 +464,62 @@ function BalanceCard({
         top: isFront ? peekOffset : 0,
         height: CARD_H,
         overflow: "hidden",
-        backgroundColor: base,
-        backgroundImage: `${scrim}, url(${image})`,
-        backgroundSize: "cover, cover",
-        backgroundPosition: "center, center",
-        backgroundRepeat: "no-repeat, no-repeat",
+        background: surface,
+        border: `1px solid ${t.border}`,
         borderRadius: t.radiusCard,
         padding: 18,
-        color: "#fff",
+        color: greco.ink,
         zIndex: isFront ? 2 : 1,
-        opacity: isFront ? 1 : 0.97,
+        opacity: isFront ? 1 : 0.98,
         boxShadow: isFront
-          ? "0 10px 26px -10px rgba(20,28,51,0.22)"
-          : "0 6px 16px -8px rgba(20,28,51,0.14)",
+          ? "0 12px 26px -14px rgba(20,28,51,0.20)"
+          : "0 6px 16px -10px rgba(20,28,51,0.14)",
         cursor: isFront ? "default" : "pointer",
         transition: "top 0.3s ease, left 0.3s ease, right 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease",
       }}
     >
       <div style={{ position: "relative" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 3, background: accent }} />
           <span
-            style={{ width: 7, height: 7, borderRadius: 4, background: accent, boxShadow: `0 0 8px ${accent}` }}
-          />
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.72)" }}>{label}</span>
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: greco.sub,
+            }}
+          >
+            {label}
+          </span>
         </div>
-        <div style={{ fontSize: 32, fontWeight: 800, marginTop: 4 }}>
-          <span style={{ color: accent }}>{symbol}</span>
+        <div
+          style={{
+            fontFamily: display,
+            fontSize: 34,
+            fontWeight: 800,
+            lineHeight: 1.05,
+            marginTop: 6,
+            letterSpacing: "-0.02em",
+            fontVariantNumeric: "tabular-nums",
+            color: greco.ink,
+          }}
+        >
+          <span style={{ color: accent, marginRight: 3, fontWeight: 700 }}>{symbol}</span>
           {amount}
         </div>
         {isFront && (
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 2 }}>{sub}</div>
+          <div style={{ fontSize: 12.5, color: greco.sub, marginTop: 2 }}>{sub}</div>
         )}
 
         {isFront && (
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 15 }}>
             {actions.map((a) => (
-              <WalletBtn key={a.label} primary={a.primary} label={a.label} onClick={() => onOpenDosh(a.prompt)} />
+              <WalletBtn
+                key={a.label}
+                primary={a.primary}
+                accent={accent}
+                label={a.label}
+                onClick={() => onOpenDosh(a.prompt)}
+              />
             ))}
           </div>
         )}
@@ -507,24 +532,27 @@ function WalletBtn({
   label,
   onClick,
   primary,
+  accent,
 }: {
   label: string;
   onClick: () => void;
   primary?: boolean;
+  accent: string;
 }) {
   return (
     <button
       onClick={onClick}
       style={{
         flex: 1,
-        border: "none",
-        background: primary ? t.lime : "rgba(255,255,255,0.12)",
-        color: primary ? t.limeInk : "#fff",
-        borderRadius: 12,
+        border: primary ? "none" : `1px solid ${greco.hairline}`,
+        background: primary ? greco.onyx : "transparent",
+        color: primary ? greco.ivory : greco.ink,
+        borderRadius: 11,
         padding: "11px",
-        fontSize: 14,
-        fontWeight: primary ? 800 : 700,
-        boxShadow: primary ? limeGlow : "none",
+        fontSize: 13.5,
+        fontWeight: 700,
+        letterSpacing: 0.2,
+        boxShadow: primary ? "0 8px 18px -8px rgba(20,17,12,0.5)" : "none",
         cursor: "pointer",
       }}
     >
