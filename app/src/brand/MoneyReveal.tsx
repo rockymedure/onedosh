@@ -734,7 +734,11 @@ export function MoneyReveal() {
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [cardWidth, setCardWidth] = useState(300);
+  // Re-run on view change: the phone unmounts in gallery view, so we must
+  // re-measure and re-observe the fresh content node when we return to it,
+  // otherwise the card renders at a stale/undersized width.
   useLayoutEffect(() => {
+    if (view !== "phone") return;
     const el = contentRef.current;
     if (!el) return;
     // clientWidth includes the 16px horizontal padding on each side; the card
@@ -744,7 +748,7 @@ export function MoneyReveal() {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [view]);
 
   return (
     <div
